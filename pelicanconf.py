@@ -5,10 +5,19 @@ from __future__ import unicode_literals
 AUTHOR = u'Michael Bell'
 SITENAME = u'Michael Bell'
 SITEURL = ''
+SITESUBTITLE = "Father, data scientist, gamer"
+
+TWITTER_USERNAME = 'mryanbell'
+
+DISQUS_SITENAME = "michaelryanbellcom"
 
 PATH = 'content'
 
-TIMEZONE = 'Europe/Paris'
+BOOTSTRAP_THEME = 'simplex'
+
+THEME = "C:\\Users\\bellm_000\\Code\\PelicanThemes\\pelican-bootstrap3"
+
+TIMEZONE = 'America/New_York'
 
 DEFAULT_LANG = u'en'
 
@@ -19,15 +28,18 @@ TRANSLATION_FEED_ATOM = None
 AUTHOR_FEED_ATOM = None
 AUTHOR_FEED_RSS = None
 
+LOAD_CONTENT_CACHE = False
+
+DEFAULT_CATEGORY = "Blog"
+DISPLAY_CATEGORIES_ON_MENU = True
+DISPLAY_PAGES_ON_MENU = True
+
 # Blogroll
-LINKS = (('Pelican', 'http://getpelican.com/'),
-         ('Python.org', 'http://python.org/'),
-         ('Jinja2', 'http://jinja.pocoo.org/'),
-         ('You can modify those links in your config file', '#'),)
+LINKS = ()
 
 # Social widget
-SOCIAL = (('You can add links in your config file', '#'),
-          ('Another social link', '#'),)
+SOCIAL = (('Twitter', 'https://twitter.com/mryanbell'),
+          ('GitHub', 'https://github.com/mrbell'))
 
 DEFAULT_PAGINATION = 10
 
