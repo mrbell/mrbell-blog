@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Michael Bell</title><link href="http://michaelryanbell.com/" rel="alternate"></link><link href="http://michaelryanbell.com/feeds/blog.atom.xml" rel="self"></link><id>http://michaelryanbell.com/</id><updated>2014-02-01T10:20:00-05:00</updated><entry><title>Spell checking an IPython notebook</title><link href="http://michaelryanbell.com/ipynb-spellchecking.html" rel="alternate"></link><updated>2014-02-01T10:20:00-05:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2014-02-01:ipynb-spellchecking.html</id><summary type="html">&lt;p&gt;I've been using &lt;a href="http://ipython.org/notebook.html"&gt;IPython notebooks&lt;/a&gt; a lot lately for both my personal and professional research and analysis projects. It's a great tool for keeping code, visualization and analysis together in one place. It's also convenient for communicating results. Just export your notebook to HTML and it's ready to distribute... except for the fact that without a spell checker I tend to have a lot of typos in my markdown cells. &lt;/p&gt;
+&lt;p&gt;I found a work-around that enables spell checking in the markdown cells of my notebooks from GitHub user &lt;a href="https://github.com/dsblank"&gt;dsblank&lt;/a&gt; in the comments of the IPython project issue &lt;a href="https://github.com/ipython/ipython/issues/3216"&gt;here&lt;/a&gt;. It is a bit hack-y and tedious but it works. &lt;/p&gt;
+&lt;p&gt;To enable spell checking, do the following:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Install a custom extension with the following command&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;ipython&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;nbextension&lt;/span&gt; &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="c1"&gt;//bitbucket.org/ipre/calico/downloads/calico-spell-check-1.0.zip&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Execute the following code in a cell of your notebook&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="c"&gt;%%javascript&lt;/span&gt;
+&lt;span class="n"&gt;IPython&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load_extensions&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;calico-spell-check&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;You should now see a new button in the tool bar that, when checked, enables spell checking within your markdown cells. &lt;/p&gt;
+&lt;p&gt;This functionality will only last for the current session of the current notebook. You'll have to repeat step 2 for each notebook and for every session. &lt;strong&gt;And be sure to delete or comment the code from step 2 once you've executed it.&lt;/strong&gt; I've found that it causes problems (unexecutable markdown cells) if you happen to execute that block of code twice in one session.&lt;/p&gt;
+&lt;p&gt;Apart from the tedium of this solution, I've found that it works rather well. Hopefully this functionality will make it into future release of the IPython notebook.&lt;/p&gt;</summary><category term="ipython"></category></entry></feed>
