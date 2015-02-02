@@ -43,5 +43,7 @@ SOCIAL = (('Twitter', 'https://twitter.com/mryanbell'),
 
 DEFAULT_PAGINATION = 10
 
+STATIC_PATHS = ['CNAME', 'images']
+
 # Uncomment following line if you want document-relative URLs when developing
 #RELATIVE_URLS = True
