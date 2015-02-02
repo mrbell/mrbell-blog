@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Michael Bell - misc</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+
+        <!--[if IE]>
+            <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">Michael Bell </a></h1>
+                <nav><ul>
+                    <li class="active"><a href="/category/misc.html">misc</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="/ipynb-spellchecking.html">Spell checking an IPython notebook</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2014-02-01T10:20:00-05:00">
+                Published: Sat 01 February 2014
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="/author/michael-bell.html">Michael Bell</a>
+        </address>
+<p>In <a href="/category/misc.html">misc</a>. </p>
+<p>tags: <a href="/tag/ipython.html">ipython</a> </p>
+</footer><!-- /.post-info --><p>I've been using <a href="http://ipython.org/notebook.html">IPython notebooks</a> a lot lately for both my personal and professional research and analysis projects. It's a great tool for keeping code, visualization and analysis together in one place. It's also convenient for communicating results. Just export your notebook to HTML and it's ready to distribute... except for the fact that without a spell checker I tend to have a lot of typos in my markdown cells. </p>
+<p>I found a work-around that enables spell checking in the markdown cells of my notebooks from GitHub user <a href="https://github.com/dsblank">dsblank</a> in the comments of the IPython project issue <a href="https://github.com/ipython/ipython/issues/3216">here</a>. It is a bit hack-y and tedious but it works. </p>
+<p>To enable spell checking, do the following:</p>
+<ol>
+<li>
+<p>Install a custom extension with the following command</p>
+<div class="highlight"><pre><span class="n">ipython</span> <span class="n">install</span><span class="o">-</span><span class="n">nbextension</span> <span class="n">https</span><span class="o">:</span><span class="c1">//bitbucket.org/ipre/calico/downloads/calico-spell-check-1.0.zip</span>
+</pre></div>
+
+
+</li>
+<li>
+<p>Execute the following code in a cell of your notebook</p>
+<div class="highlight"><pre><span class="c">%%javascript</span>
+<span class="n">IPython</span><span class="p">.</span><span class="n">load_extensions</span><span class="p">(</span><span class="s">&#39;calico-spell-check&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+</li>
+</ol>
+<p>You should now see a new button in the tool bar that, when checked, enables spell checking within your markdown cells. </p>
+<p>This functionality will only last for the current session of the current notebook. You'll have to repeat step 2 for each notebook and for every session. <strong>And be sure to delete or comment the code from step 2 once you've executed it.</strong> I've found that it causes problems (unexecutable markdown cells) if you happen to execute that block of code twice in one session.</p>
+<p>Apart from the tedium of this solution, I've found that it works rather well. Hopefully this functionality will make it into future release of the IPython notebook.</p>                </article>
+<p class="paginator">
+    Page 1 / 1
+</p>
+            </aside><!-- /#featured -->
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>blogroll</h2>
+                        <ul>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                            <li><a href="#">You can modify those links in your config file</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="https://twitter.com/mryanbell">Twitter</a></li>
+                            <li><a href="https://github.com/mrbell">GitHub</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
