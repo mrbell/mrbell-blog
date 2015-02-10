@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- #
 from __future__ import unicode_literals
+import os
+
+home = os.path.expanduser("~")
 
 AUTHOR = u'Michael Bell'
 SITENAME = u'Michael Bell'
@@ -15,7 +18,7 @@ PATH = 'content'
 
 BOOTSTRAP_THEME = 'simplex'
 
-THEME = "C:\\Users\\bellm_000\\Code\\PelicanThemes\\pelican-bootstrap3"
+THEME = os.path.join(home, "Code/pelican-bootstrap3")
 
 TIMEZONE = 'America/New_York'
 
