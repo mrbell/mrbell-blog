@@ -1,11 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Michael Bell</title><link href="http://michaelryanbell.com/" rel="alternate"></link><link href="http://michaelryanbell.com/feeds/all.atom.xml" rel="self"></link><id>http://michaelryanbell.com/</id><updated>2014-02-01T10:20:00-05:00</updated><entry><title>Spell checking an IPython notebook</title><link href="http://michaelryanbell.com/ipynb-spellchecking.html" rel="alternate"></link><updated>2014-02-01T10:20:00-05:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2014-02-01:ipynb-spellchecking.html</id><summary type="html">&lt;p&gt;I've been using &lt;a href="http://ipython.org/notebook.html"&gt;IPython notebooks&lt;/a&gt; a lot lately for both my personal and professional research and analysis projects. It's a great tool for keeping code, visualization and analysis together in one place. It's also convenient for communicating results. Just export your notebook to HTML and it's ready to distribute... except for the fact that without a spell checker I tend to have a lot of typos in my markdown cells. &lt;/p&gt;
-&lt;p&gt;I found a work-around that enables spell checking in the markdown cells of my notebooks from GitHub user &lt;a href="https://github.com/dsblank"&gt;dsblank&lt;/a&gt; in the comments of the IPython project issue &lt;a href="https://github.com/ipython/ipython/issues/3216"&gt;here&lt;/a&gt;. It is a bit hack-y and tedious but it works. &lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Michael Bell</title><link href="http://michaelryanbell.com/" rel="alternate"></link><link href="http://michaelryanbell.com/feeds/all.atom.xml" rel="self"></link><id>http://michaelryanbell.com/</id><updated>2014-02-11T00:00:00-05:00</updated><entry><title>Processing whole files from S3 with Spark</title><link href="http://michaelryanbell.com/processing-whole-files-spark-s3.html" rel="alternate"></link><updated>2014-02-11T00:00:00-05:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2014-02-11:processing-whole-files-spark-s3.html</id><summary type="html">&lt;p&gt;I have recently started diving into &lt;a href="https://spark.apache.org/"&gt;Apache Spark&lt;/a&gt; for a project at work and ran into issues trying to process the contents of a collection of files in parallel, particularly when the files are stored on Amazon S3. In this post I describe my problem and how I got around it.&lt;/p&gt;
+&lt;p&gt;My first Spark project is simple. I have a single function that processes data from a file and a lot of data files to process using this function. It should be trivial to distribute this task, right? Just create an RDD (Spark's core data container, basically a distributed collection whose items can be operated on in parallel) where each item contains the contents of a single file and apply my function using the RDD methods &lt;code&gt;foreach&lt;/code&gt; or &lt;code&gt;map&lt;/code&gt; if I want to capture results for logging or something. &lt;/p&gt;
+&lt;p&gt;Most examples I found for &lt;code&gt;pyspark&lt;/code&gt; create RDDs using the &lt;code&gt;SparkContext.textFile()&lt;/code&gt; method. This generates an RDD where each line of the file is an item in the collection. This is not what I want. Looking through the API docs I found the method &lt;code&gt;SparkContext.wholeTextFiles()&lt;/code&gt; that appears to do exactly what I want. I can point this method to a directory and it will create an RDD where each item contains data from an entire file. Perfect! Well, it would be if it worked anyway.&lt;/p&gt;
+&lt;p&gt;Here's the issue... our data files are stored on Amazon S3, and for whatever reason this method fails when reading data from S3 (using Spark v1.2.0). I'm using &lt;a href="https://spark.apache.org/docs/1.2.1/api/python/pyspark.html"&gt;&lt;code&gt;pyspark&lt;/code&gt;&lt;/a&gt; but I've read in forums that people are having the same issue with the Scala library, so it's not just a Python issue. Anyway, here's how I got around this problem.&lt;/p&gt;
+&lt;p&gt;First, I create a listing of files in a root directory and store the listing in a text file in a scratch bucket on S3. Here is a code snippet (I'm using &lt;a href="https://boto.readthedocs.org/en/latest/"&gt;&lt;code&gt;boto&lt;/code&gt;&lt;/a&gt; to interact with S3):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;conn&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;boto&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect_s3&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="c"&gt;# bucket is the name of the S3 bucket where your data resides&lt;/span&gt;
+&lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;conn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_bucket&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;bucket&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  
+&lt;span class="c"&gt;# inkey_root is the S3 &amp;#39;directory&amp;#39; in which your files are located&lt;/span&gt;
+&lt;span class="n"&gt;keys&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;list&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;prefix&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;inkey_root&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;keylist&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;keys&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="c"&gt;# Create a file on S3 in a scratch directory that &lt;/span&gt;
+&lt;span class="c"&gt;# contains the file listing, one path per line.&lt;/span&gt;
+&lt;span class="n"&gt;filelist&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;boto&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;s3&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Key&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="c"&gt;# scratchkey_root is the scratch directory where you want the file listing stored&lt;/span&gt;
+&lt;span class="n"&gt;filelist&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;join&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;scratchkey_root&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;filelist.txt&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  
+&lt;span class="n"&gt;filelist&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;set_contents_from_string&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;join&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;keylist&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+&lt;span class="n"&gt;conn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;close&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Next I need a function that takes a file path, parses the data from the file into a string, and returns a tuple with the file name and contents (as a string). Here is just such a function:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;fetch_data&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s3key&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="sd"&gt;    Fetch data with the given s3 key and pass along the contents as a string.&lt;/span&gt;
+
+&lt;span class="sd"&gt;    :param s3key: An s3 key path string.&lt;/span&gt;
+&lt;span class="sd"&gt;    :return: A tuple (file_name, data) where data is the contents of the &lt;/span&gt;
+&lt;span class="sd"&gt;        file in a string. Note that if the file is compressed the string will &lt;/span&gt;
+&lt;span class="sd"&gt;        contain the compressed data which will have to be unzipped using the &lt;/span&gt;
+&lt;span class="sd"&gt;        gzip package.&lt;/span&gt;
+&lt;span class="sd"&gt;    &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;conn&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;boto&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect_s3&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;conn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_bucket&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;bucket&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;k&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_key&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s3key&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_contents_as_string&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;conn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;close&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="c"&gt;# I use basename() to get just the file name itself&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;basename&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s3key&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Then I create an RDD using &lt;code&gt;textFile&lt;/code&gt; on the file listing file. The RDD items will be the paths (ok fine, &lt;em&gt;keys&lt;/em&gt;) of the files that I want to process in S3.  Then I call the RDD's &lt;code&gt;map&lt;/code&gt; method, using &lt;code&gt;fetch_data&lt;/code&gt; to parse the files and pass their contents along as a new RDD with the file contents as items, just like I wanted from &lt;code&gt;wholeTextFiles&lt;/code&gt; in the first place. Then you can go ahead and process the resulting data as necessary, e.g. by chaining a call to another &lt;code&gt;map&lt;/code&gt;, &lt;code&gt;foreach&lt;/code&gt; or whatever. Here's the code, with a chained call to &lt;code&gt;foreach&lt;/code&gt; to process the data using a function &lt;code&gt;process_data&lt;/code&gt;.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sc&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pyspark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SparkContext&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;local&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Whatever&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;lines&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sc&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;textFile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;s3n://&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;bucket&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;scratchkey_root&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/filelist.txt&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;lines&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;map&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fetch_data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;foreach&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;process_data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;So there you have it, a simple way to get around the fact that Spark's &lt;code&gt;wholeTextFiles&lt;/code&gt; (as of now) does not work with files stored in S3.&lt;/p&gt;</summary><category term="spark"></category><category term="how-to"></category></entry><entry><title>Spell checking an IPython notebook</title><link href="http://michaelryanbell.com/ipynb-spellchecking.html" rel="alternate"></link><updated>2014-02-01T00:00:00-05:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2014-02-01:ipynb-spellchecking.html</id><summary type="html">&lt;p&gt;I've been using &lt;a href="http://ipython.org/notebook.html"&gt;IPython notebooks&lt;/a&gt; a lot lately for both my personal and professional 
+research and analysis projects. It's a great tool for keeping code, visualization and analysis together in one place. 
+It's also convenient for communicating results. Just export your notebook to HTML and it's ready to distribute... except 
+for the fact that without a spell checker I tend to have a lot of typos in my markdown cells. &lt;/p&gt;
+&lt;p&gt;I found a work-around that enables spell checking in the markdown cells of my notebooks from GitHub user 
+&lt;a href="https://github.com/dsblank"&gt;dsblank&lt;/a&gt; in the comments of the IPython project issue 
+&lt;a href="https://github.com/ipython/ipython/issues/3216"&gt;here&lt;/a&gt;. It is a bit hack-y and tedious but it works. &lt;/p&gt;
 &lt;p&gt;To enable spell checking, do the following:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;Install a custom extension with the following command&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;ipython&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;nbextension&lt;/span&gt; &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="c1"&gt;//bitbucket.org/ipre/calico/downloads/calico-spell-check-1.0.zip&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;ipython install-nbextension https://bitbucket.org/ipre/calico/downloads/calico-spell-check-1.0.zip
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -20,5 +79,9 @@
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;You should now see a new button in the tool bar that, when checked, enables spell checking within your markdown cells. &lt;/p&gt;
-&lt;p&gt;This functionality will only last for the current session of the current notebook. You'll have to repeat step 2 for each notebook and for every session. &lt;strong&gt;And be sure to delete or comment the code from step 2 once you've executed it.&lt;/strong&gt; I've found that it causes problems (unexecutable markdown cells) if you happen to execute that block of code twice in one session.&lt;/p&gt;
-&lt;p&gt;Apart from the tedium of this solution, I've found that it works rather well. Hopefully this functionality will make it into future release of the IPython notebook.&lt;/p&gt;</summary><category term="ipython"></category></entry></feed>
+&lt;p&gt;This functionality will only last for the current session of the current notebook. You'll have to repeat step 2 for each 
+notebook and for every session. &lt;strong&gt;And be sure to delete or comment the code from step 2 once you've executed it.&lt;/strong&gt; I've 
+found that it causes problems (unexecutable markdown cells) if you happen to execute that block of code twice in one 
+session.&lt;/p&gt;
+&lt;p&gt;Apart from the tedium of this solution, I've found that it works rather well. Hopefully this functionality will make it 
+into future release of the IPython notebook.&lt;/p&gt;</summary><category term="ipython"></category><category term="how-to"></category></entry></feed>

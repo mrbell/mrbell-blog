@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en"
+>
+<head>
+    <title>Processing whole files from S3 with Spark - Michael Bell</title>
+    <!-- Using the latest rendering mode for IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+<link rel="canonical" href="http://michaelryanbell.com/processing-whole-files-spark-s3.html">
+
+        <meta name="author" content="Michael Bell" />
+        <meta name="keywords" content="spark,how-to" />
+        <meta name="description" content="I have recently started diving into Apache Spark for a project at work and ran into issues trying to process the contents of a collection of files in parallel, particularly when the files are stored on Amazon S3. In this post I describe my problem and how I got around ..." />
+
+        <meta property="og:site_name" content="Michael Bell" />
+        <meta property="og:type" content="article"/>
+        <meta property="og:title" content="Processing whole files from S3 with Spark"/>
+        <meta property="og:url" content="http://michaelryanbell.com/processing-whole-files-spark-s3.html"/>
+        <meta property="og:description" content="I have recently started diving into Apache Spark for a project at work and ran into issues trying to process the contents of a collection of files in parallel, particularly when the files are stored on Amazon S3. In this post I describe my problem and how I got around ..."/>
+        <meta property="article:published_time" content="2014-02-11" />
+            <meta property="article:section" content="Blog" />
+            <meta property="article:tag" content="spark" />
+            <meta property="article:tag" content="how-to" />
+            <meta property="article:author" content="Michael Bell" />
+
+
+    <!-- Bootstrap -->
+        <link rel="stylesheet" href="http://michaelryanbell.com/theme/css/bootstrap.simplex.min.css" type="text/css"/>
+    <link href="http://michaelryanbell.com/theme/css/font-awesome.min.css" rel="stylesheet">
+
+    <link href="http://michaelryanbell.com/theme/css/pygments/native.css" rel="stylesheet">
+    <link rel="stylesheet" href="http://michaelryanbell.com/theme/css/style.css" type="text/css"/>
+
+        <link href="http://michaelryanbell.com/feeds/all.atom.xml" type="application/atom+xml" rel="alternate"
+              title="Michael Bell ATOM Feed"/>
+
+</head>
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+	<div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="http://michaelryanbell.com/" class="navbar-brand">
+Michael Bell            </a>
+        </div>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav">
+                        <li class="active">
+                            <a href="http://michaelryanbell.com/category/blog.html">Blog</a>
+                        </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li><a href="http://michaelryanbell.com/archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+</div> <!-- /.navbar -->
+<!-- Banner -->
+<!-- End Banner -->
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9">
+
+    <section id="content">
+        <article>
+            <header class="page-header">
+                <h1>
+                    <a href="http://michaelryanbell.com/processing-whole-files-spark-s3.html"
+                       rel="bookmark"
+                       title="Permalink to Processing whole files from S3 with Spark">
+                        Processing whole files from S3 with Spark
+                    </a>
+                </h1>
+            </header>
+            <div class="entry-content">
+                <div class="panel">
+                    <div class="panel-body">
+<footer class="post-info">
+    <span class="label label-default">Date</span>
+    <span class="published">
+        <i class="fa fa-calendar"></i><time datetime="2014-02-11T00:00:00-05:00"> Tue 11 February 2014</time>
+    </span>
+
+
+
+<span class="label label-default">Tags</span>
+	<a href="http://michaelryanbell.com/tag/spark.html">spark</a>
+        /
+	<a href="http://michaelryanbell.com/tag/how-to.html">how-to</a>
+    
+</footer><!-- /.post-info -->                    </div>
+                </div>
+                <p>I have recently started diving into <a href="https://spark.apache.org/">Apache Spark</a> for a project at work and ran into issues trying to process the contents of a collection of files in parallel, particularly when the files are stored on Amazon S3. In this post I describe my problem and how I got around it.</p>
+<p>My first Spark project is simple. I have a single function that processes data from a file and a lot of data files to process using this function. It should be trivial to distribute this task, right? Just create an RDD (Spark's core data container, basically a distributed collection whose items can be operated on in parallel) where each item contains the contents of a single file and apply my function using the RDD methods <code>foreach</code> or <code>map</code> if I want to capture results for logging or something. </p>
+<p>Most examples I found for <code>pyspark</code> create RDDs using the <code>SparkContext.textFile()</code> method. This generates an RDD where each line of the file is an item in the collection. This is not what I want. Looking through the API docs I found the method <code>SparkContext.wholeTextFiles()</code> that appears to do exactly what I want. I can point this method to a directory and it will create an RDD where each item contains data from an entire file. Perfect! Well, it would be if it worked anyway.</p>
+<p>Here's the issue... our data files are stored on Amazon S3, and for whatever reason this method fails when reading data from S3 (using Spark v1.2.0). I'm using <a href="https://spark.apache.org/docs/1.2.1/api/python/pyspark.html"><code>pyspark</code></a> but I've read in forums that people are having the same issue with the Scala library, so it's not just a Python issue. Anyway, here's how I got around this problem.</p>
+<p>First, I create a listing of files in a root directory and store the listing in a text file in a scratch bucket on S3. Here is a code snippet (I'm using <a href="https://boto.readthedocs.org/en/latest/"><code>boto</code></a> to interact with S3):</p>
+<div class="highlight"><pre><span class="n">conn</span> <span class="o">=</span> <span class="n">boto</span><span class="o">.</span><span class="n">connect_s3</span><span class="p">()</span>
+<span class="c"># bucket is the name of the S3 bucket where your data resides</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">(</span><span class="n">bucket</span><span class="p">)</span>  
+<span class="c"># inkey_root is the S3 &#39;directory&#39; in which your files are located</span>
+<span class="n">keys</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">inkey_root</span><span class="p">)</span>
+
+<span class="n">keylist</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span>
+
+<span class="c"># Create a file on S3 in a scratch directory that </span>
+<span class="c"># contains the file listing, one path per line.</span>
+<span class="n">filelist</span> <span class="o">=</span> <span class="n">boto</span><span class="o">.</span><span class="n">s3</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">Key</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+
+<span class="c"># scratchkey_root is the scratch directory where you want the file listing stored</span>
+<span class="n">filelist</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">scratchkey_root</span><span class="p">,</span> <span class="s">&#39;filelist.txt&#39;</span><span class="p">)</span>  
+<span class="n">filelist</span><span class="o">.</span><span class="n">set_contents_from_string</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">keylist</span><span class="p">))</span>
+
+<span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+
+
+<p>Next I need a function that takes a file path, parses the data from the file into a string, and returns a tuple with the file name and contents (as a string). Here is just such a function:</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">fetch_data</span><span class="p">(</span><span class="n">s3key</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetch data with the given s3 key and pass along the contents as a string.</span>
+
+<span class="sd">    :param s3key: An s3 key path string.</span>
+<span class="sd">    :return: A tuple (file_name, data) where data is the contents of the </span>
+<span class="sd">        file in a string. Note that if the file is compressed the string will </span>
+<span class="sd">        contain the compressed data which will have to be unzipped using the </span>
+<span class="sd">        gzip package.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">boto</span><span class="o">.</span><span class="n">connect_s3</span><span class="p">()</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">(</span><span class="n">bucket</span><span class="p">)</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">get_key</span><span class="p">(</span><span class="n">s3key</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">get_contents_as_string</span><span class="p">()</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c"># I use basename() to get just the file name itself</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">s3key</span><span class="p">),</span> <span class="n">data</span>
+</pre></div>
+
+
+<p>Then I create an RDD using <code>textFile</code> on the file listing file. The RDD items will be the paths (ok fine, <em>keys</em>) of the files that I want to process in S3.  Then I call the RDD's <code>map</code> method, using <code>fetch_data</code> to parse the files and pass their contents along as a new RDD with the file contents as items, just like I wanted from <code>wholeTextFiles</code> in the first place. Then you can go ahead and process the resulting data as necessary, e.g. by chaining a call to another <code>map</code>, <code>foreach</code> or whatever. Here's the code, with a chained call to <code>foreach</code> to process the data using a function <code>process_data</code>.</p>
+<div class="highlight"><pre><span class="n">sc</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">SparkContext</span><span class="p">(</span><span class="s">&#39;local&#39;</span><span class="p">,</span> <span class="s">&#39;Whatever&#39;</span><span class="p">)</span>
+<span class="n">lines</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">textFile</span><span class="p">(</span><span class="s">&#39;s3n://&#39;</span><span class="o">+</span><span class="n">bucket</span><span class="o">+</span><span class="s">&quot;/&quot;</span><span class="o">+</span><span class="n">scratchkey_root</span><span class="o">+</span><span class="s">&quot;/filelist.txt&quot;</span><span class="p">)</span>
+<span class="n">lines</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">fetch_data</span><span class="p">)</span><span class="o">.</span><span class="n">foreach</span><span class="p">(</span><span class="n">process_data</span><span class="p">)</span>
+</pre></div>
+
+
+<p>So there you have it, a simple way to get around the fact that Spark's <code>wholeTextFiles</code> (as of now) does not work with files stored in S3.</p>
+            </div>
+            <!-- /.entry-content -->
+    <hr/>
+    <section class="comments" id="comments">
+        <h2>Comments</h2>
+
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'michaelryanbellcom'; // required: replace example with your forum shortname
+
+                    var disqus_identifier = 'processing-whole-files-spark-s3';
+                var disqus_url = 'http://michaelryanbell.com/processing-whole-files-spark-s3.html';
+
+            var disqus_config = function () {
+                this.language = "en";
+            };
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function () {
+                var dsq = document.createElement('script');
+                dsq.type = 'text/javascript';
+                dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+            Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    </section>
+        </article>
+    </section>
+
+        </div>
+        <div class="col-sm-3" id="sidebar">
+            <aside>
+
+<section class="well well-sm">
+    <ul class="list-group list-group-flush">
+            <li class="list-group-item"><h4><i class="fa fa-home fa-lg"></i><span class="icon-label">Social</span></h4>
+              <ul class="list-group" id="social">
+                <li class="list-group-item"><a href="https://twitter.com/mryanbell"><i class="fa fa-twitter-square fa-lg"></i> Twitter</a></li>
+                <li class="list-group-item"><a href="https://github.com/mrbell"><i class="fa fa-github-square fa-lg"></i> GitHub</a></li>
+              </ul>
+            </li>
+
+
+
+            <li class="list-group-item"><a href="http://michaelryanbell.com/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
+                <ul class="list-group " id="tags">
+                    <li class="list-group-item tag-1">
+                        <a href="http://michaelryanbell.com/tag/how-to.html">
+                            how-to
+                        </a>
+                    </li>
+                    <li class="list-group-item tag-4">
+                        <a href="http://michaelryanbell.com/tag/ipython.html">
+                            ipython
+                        </a>
+                    </li>
+                    <li class="list-group-item tag-4">
+                        <a href="http://michaelryanbell.com/tag/spark.html">
+                            spark
+                        </a>
+                    </li>
+                </ul>
+            </li>
+    </ul>
+</section>
+            </aside>
+        </div>
+    </div>
+</div>
+<footer>
+   <div class="container">
+      <hr>
+      <div class="row">
+         <div class="col-xs-10">&copy; 2014 Michael Bell
+            &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+            <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
+            <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
+         <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>
+      </div>
+   </div>
+</footer>
+<script src="http://michaelryanbell.com/theme/js/jquery.min.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="http://michaelryanbell.com/theme/js/bootstrap.min.js"></script>
+
+<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+<script src="http://michaelryanbell.com/theme/js/respond.min.js"></script>
+
+    <!-- Disqus -->
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'michaelryanbellcom'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function () {
+            var s = document.createElement('script');
+            s.async = true;
+            s.type = 'text/javascript';
+            s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+        }());
+    </script>
+    <!-- End Disqus Code -->
+    <!-- Google Analytics -->
+    <script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-59163082-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function () {
+            var ga = document.createElement('script');
+            ga.type = 'text/javascript';
+            ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+    <!-- End Google Analytics Code -->
+
+</body>
+</html>

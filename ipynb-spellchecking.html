@@ -13,7 +13,7 @@
 <link rel="canonical" href="http://michaelryanbell.com/ipynb-spellchecking.html">
 
         <meta name="author" content="Michael Bell" />
-        <meta name="keywords" content="ipython" />
+        <meta name="keywords" content="ipython,how-to" />
         <meta name="description" content="I&#39;ve been using IPython notebooks a lot lately for both my personal and professional research and analysis projects. It&#39;s a great tool for keeping code, visualization and analysis together in one place. It&#39;s also convenient for communicating results. Just export your notebook to HTML and it&#39;s ..." />
 
         <meta property="og:site_name" content="Michael Bell" />
@@ -24,6 +24,7 @@
         <meta property="article:published_time" content="2014-02-01" />
             <meta property="article:section" content="Blog" />
             <meta property="article:tag" content="ipython" />
+            <meta property="article:tag" content="how-to" />
             <meta property="article:author" content="Michael Bell" />
 
 
@@ -88,23 +89,30 @@ Michael Bell            </a>
 <footer class="post-info">
     <span class="label label-default">Date</span>
     <span class="published">
-        <i class="fa fa-calendar"></i><time datetime="2014-02-01T10:20:00-05:00"> Sat 01 February 2014</time>
+        <i class="fa fa-calendar"></i><time datetime="2014-02-01T00:00:00-05:00"> Sat 01 February 2014</time>
     </span>
 
 
 
 <span class="label label-default">Tags</span>
 	<a href="http://michaelryanbell.com/tag/ipython.html">ipython</a>
+        /
+	<a href="http://michaelryanbell.com/tag/how-to.html">how-to</a>
     
 </footer><!-- /.post-info -->                    </div>
                 </div>
-                <p>I've been using <a href="http://ipython.org/notebook.html">IPython notebooks</a> a lot lately for both my personal and professional research and analysis projects. It's a great tool for keeping code, visualization and analysis together in one place. It's also convenient for communicating results. Just export your notebook to HTML and it's ready to distribute... except for the fact that without a spell checker I tend to have a lot of typos in my markdown cells. </p>
-<p>I found a work-around that enables spell checking in the markdown cells of my notebooks from GitHub user <a href="https://github.com/dsblank">dsblank</a> in the comments of the IPython project issue <a href="https://github.com/ipython/ipython/issues/3216">here</a>. It is a bit hack-y and tedious but it works. </p>
+                <p>I've been using <a href="http://ipython.org/notebook.html">IPython notebooks</a> a lot lately for both my personal and professional 
+research and analysis projects. It's a great tool for keeping code, visualization and analysis together in one place. 
+It's also convenient for communicating results. Just export your notebook to HTML and it's ready to distribute... except 
+for the fact that without a spell checker I tend to have a lot of typos in my markdown cells. </p>
+<p>I found a work-around that enables spell checking in the markdown cells of my notebooks from GitHub user 
+<a href="https://github.com/dsblank">dsblank</a> in the comments of the IPython project issue 
+<a href="https://github.com/ipython/ipython/issues/3216">here</a>. It is a bit hack-y and tedious but it works. </p>
 <p>To enable spell checking, do the following:</p>
 <ol>
 <li>
 <p>Install a custom extension with the following command</p>
-<div class="highlight"><pre><span class="n">ipython</span> <span class="n">install</span><span class="o">-</span><span class="n">nbextension</span> <span class="n">https</span><span class="o">:</span><span class="c1">//bitbucket.org/ipre/calico/downloads/calico-spell-check-1.0.zip</span>
+<div class="highlight"><pre>ipython install-nbextension https://bitbucket.org/ipre/calico/downloads/calico-spell-check-1.0.zip
 </pre></div>
 
 
@@ -119,8 +127,12 @@ Michael Bell            </a>
 </li>
 </ol>
 <p>You should now see a new button in the tool bar that, when checked, enables spell checking within your markdown cells. </p>
-<p>This functionality will only last for the current session of the current notebook. You'll have to repeat step 2 for each notebook and for every session. <strong>And be sure to delete or comment the code from step 2 once you've executed it.</strong> I've found that it causes problems (unexecutable markdown cells) if you happen to execute that block of code twice in one session.</p>
-<p>Apart from the tedium of this solution, I've found that it works rather well. Hopefully this functionality will make it into future release of the IPython notebook.</p>
+<p>This functionality will only last for the current session of the current notebook. You'll have to repeat step 2 for each 
+notebook and for every session. <strong>And be sure to delete or comment the code from step 2 once you've executed it.</strong> I've 
+found that it causes problems (unexecutable markdown cells) if you happen to execute that block of code twice in one 
+session.</p>
+<p>Apart from the tedium of this solution, I've found that it works rather well. Hopefully this functionality will make it 
+into future release of the IPython notebook.</p>
             </div>
             <!-- /.entry-content -->
     <hr/>
@@ -173,9 +185,19 @@ Michael Bell            </a>
 
             <li class="list-group-item"><a href="http://michaelryanbell.com/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
                 <ul class="list-group " id="tags">
+                    <li class="list-group-item tag-1">
+                        <a href="http://michaelryanbell.com/tag/how-to.html">
+                            how-to
+                        </a>
+                    </li>
                     <li class="list-group-item tag-4">
                         <a href="http://michaelryanbell.com/tag/ipython.html">
                             ipython
+                        </a>
+                    </li>
+                    <li class="list-group-item tag-4">
+                        <a href="http://michaelryanbell.com/tag/spark.html">
+                            spark
                         </a>
                     </li>
                 </ul>
