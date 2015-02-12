@@ -1,6 +1,6 @@
 Title: Spell checking an IPython notebook
-Date: 2014-02-01 10:20
-Tags: ipython
+Date: 2014-02-01
+Tags: ipython, how-to
 Slug: ipynb-spellchecking
 
 I've been using [IPython notebooks](http://ipython.org/notebook.html) a lot lately for both my personal and professional 
