@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en"
+>
+<head>
+    <title>Closures in Python - Michael Bell</title>
+    <!-- Using the latest rendering mode for IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+<link rel="canonical" href="http://michaelryanbell.com/python_closures.html">
+
+        <meta name="author" content="Michael Bell" />
+        <meta name="keywords" content="python" />
+        <meta name="description" content="The concept of closures is something that I&#39;ve been familiar with for a while, but I haven&#39;t used in my own work until recently. I started thinking more about closures while reading A Software Engineer Learns HTML5, JavaScript and jQuery by Dane Cameron (an excellent book, btw). They ..." />
+
+        <meta property="og:site_name" content="Michael Bell" />
+        <meta property="og:type" content="article"/>
+        <meta property="og:title" content="Closures in Python"/>
+        <meta property="og:url" content="http://michaelryanbell.com/python_closures.html"/>
+        <meta property="og:description" content="The concept of closures is something that I&#39;ve been familiar with for a while, but I haven&#39;t used in my own work until recently. I started thinking more about closures while reading A Software Engineer Learns HTML5, JavaScript and jQuery by Dane Cameron (an excellent book, btw). They ..."/>
+        <meta property="article:published_time" content="2015-08-16" />
+            <meta property="article:section" content="Blog" />
+            <meta property="article:tag" content="python" />
+            <meta property="article:author" content="Michael Bell" />
+
+
+    <!-- Bootstrap -->
+        <link rel="stylesheet" href="http://michaelryanbell.com/theme/css/bootstrap.simplex.min.css" type="text/css"/>
+    <link href="http://michaelryanbell.com/theme/css/font-awesome.min.css" rel="stylesheet">
+
+    <link href="http://michaelryanbell.com/theme/css/pygments/native.css" rel="stylesheet">
+    <link rel="stylesheet" href="http://michaelryanbell.com/theme/css/style.css" type="text/css"/>
+
+        <link href="http://michaelryanbell.com/feeds/all.atom.xml" type="application/atom+xml" rel="alternate"
+              title="Michael Bell ATOM Feed"/>
+
+</head>
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+	<div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="http://michaelryanbell.com/" class="navbar-brand">
+Michael Bell            </a>
+        </div>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav">
+                        <li class="active">
+                            <a href="http://michaelryanbell.com/category/blog.html">Blog</a>
+                        </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li><a href="http://michaelryanbell.com/archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+</div> <!-- /.navbar -->
+<!-- Banner -->
+<!-- End Banner -->
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9">
+
+    <section id="content">
+        <article>
+            <header class="page-header">
+                <h1>
+                    <a href="http://michaelryanbell.com/python_closures.html"
+                       rel="bookmark"
+                       title="Permalink to Closures in Python">
+                        Closures in Python
+                    </a>
+                </h1>
+            </header>
+            <div class="entry-content">
+                <div class="panel">
+                    <div class="panel-body">
+<footer class="post-info">
+    <span class="label label-default">Date</span>
+    <span class="published">
+        <i class="fa fa-calendar"></i><time datetime="2015-08-16T00:00:00-04:00"> Sun 16 August 2015</time>
+    </span>
+
+
+
+<span class="label label-default">Tags</span>
+	<a href="http://michaelryanbell.com/tag/python.html">python</a>
+    
+</footer><!-- /.post-info -->                    </div>
+                </div>
+                <p>The concept of <a href="https://en.wikipedia.org/wiki/Closure_(computer_programming)"><em>closures</em></a> is something that I've been 
+familiar with for a while, but I haven't used in my own work until recently. I started thinking more about closures while reading 
+<a href="http://www.amazon.com/Software-Engineer-Learns-JavaScript-jQuery-ebook/dp/B00GAMTRI8">A Software Engineer Learns HTML5, JavaScript and jQuery</a> 
+by Dane Cameron (an excellent book, btw). They are introduced in the book as a way to protect object members. 
+In JS, like in Python, members of an object are public. In the absence of a <em>private</em> keyword or the like, one can use 
+closures to protect state variables from tampering by external code. Here's an example:</p>
+<div class="highlight"><pre><span class="kd">function</span> <span class="nx">incrementer</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+    <span class="k">return</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span><span class="k">return</span> <span class="o">++</span><span class="nx">i</span><span class="p">;}</span>
+<span class="p">}</span>
+
+<span class="nx">f</span> <span class="o">=</span> <span class="nx">incrementer</span><span class="p">()</span>
+<span class="nx">f</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="mi">1</span>
+<span class="nx">f</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="mi">2</span>
+<span class="nx">f</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="mi">3</span>
+<span class="p">...</span>
+</pre></div>
+
+
+<p>What has happened here is that the function returned by <code>incrementer</code> has "closed" over <code>i</code>. <code>i</code> is declared in the scope 
+of <code>incrementer</code> but is accessible within <code>function</code>. Since <code>function</code> refers to <code>i</code>, the variable gets carried around 
+by <code>function</code> <em>even after <code>incrementer</code> has returned.</em> </p>
+<p>The utility of this pattern is that <code>i</code> can be modifed (incremented) by calling <code>f</code>, the function returned by <code>incrementer</code>, but 
+it can't be accessed directly in any other way. </p>
+<p>I hadn't seen closures mentioned often in Python circles, at least not in scientific and data analysis contexts. But as I 
+learned about closures in JS I couldn't help but wonder how they operate in Python, my language of choice. So does this 
+same code pattern work in Python?</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">incrementer</span><span class="p">():</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">def</span> <span class="nf">function</span><span class="p">():</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">i</span>
+    <span class="k">return</span> <span class="n">function</span>
+
+<span class="o">&gt;&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="n">incrementer</span><span class="p">()</span>
+
+<span class="o">&gt;&gt;</span> <span class="n">f</span><span class="p">()</span>
+
+<span class="o">---------------------------------------------------------------------------</span>
+<span class="ne">UnboundLocalError</span>                         <span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">ipython</span><span class="o">-</span><span class="nb">input</span><span class="o">-</span><span class="mi">6</span><span class="o">-</span><span class="mi">0</span><span class="n">ec059b9bfe1</span><span class="o">&gt;</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span><span class="p">()</span>
+<span class="o">----&gt;</span> <span class="mi">1</span> <span class="n">f</span><span class="p">()</span>
+
+<span class="o">&lt;</span><span class="n">ipython</span><span class="o">-</span><span class="nb">input</span><span class="o">-</span><span class="mi">5</span><span class="o">-</span><span class="n">fe458f37d60a</span><span class="o">&gt;</span> <span class="ow">in</span> <span class="n">function</span><span class="p">()</span>
+      <span class="mi">2</span>     <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="mi">3</span>     <span class="k">def</span> <span class="nf">function</span><span class="p">():</span>
+<span class="o">----&gt;</span> <span class="mi">4</span>         <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="mi">5</span>         <span class="k">return</span> <span class="n">i</span>
+      <span class="mi">6</span>     <span class="k">return</span> <span class="n">function</span>
+
+<span class="ne">UnboundLocalError</span><span class="p">:</span> <span class="n">local</span> <span class="n">variable</span> <span class="s">&#39;i&#39;</span> <span class="n">referenced</span> <span class="n">before</span> <span class="n">assignment</span>
+</pre></div>
+
+
+<p>Nope. We get an <code>UnboundLocalError</code>. What if we just refer to <code>i</code> rather than try to increment it's value?</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">incrementer</span><span class="p">():</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">120</span>
+    <span class="k">def</span> <span class="nf">function</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">i</span>
+    <span class="k">return</span> <span class="n">function</span>
+
+<span class="o">&gt;&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="n">incrementer</span><span class="p">()</span>
+
+<span class="o">&gt;&gt;</span> <span class="n">f</span><span class="p">()</span>
+
+<span class="mi">120</span>
+</pre></div>
+
+
+<p>That works fine. Well, <code>incrementer</code> no longer increments anything, but at least the code executes without error. So what 
+happened here? In Python, you can access a variable from a parent scope, but you can't overwrite it. Assignment in Python is
+done within the local scope, even if a variable with the same name is declared in a parent 
+scope. The parent variable is not overridden, but instead a new variable is created in the nested scope. 
+Take the following code for example:</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">incrementer</span><span class="p">():</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">120</span>
+    <span class="k">def</span> <span class="nf">function</span><span class="p">():</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="k">return</span> <span class="n">i</span>
+    <span class="k">return</span> <span class="n">function</span>
+
+<span class="o">&gt;&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="n">incrementer</span><span class="p">()</span>
+<span class="o">&gt;&gt;</span> <span class="n">f</span><span class="p">()</span>
+<span class="mi">10</span>
+</pre></div>
+
+
+<p>The <code>i</code> declared in <code>function</code> is local to the nested function and "shadows" the <code>i</code> declared in <code>incrementer</code>.  </p>
+<p>Although we can't overwrite a variable in a parent scope, we can modify its contents <em>if the object is a 
+mutable type</em> like a list or an object. So to replicate the JS style closure in Python, one could close over a
+mutable object, e.g.</p>
+<div class="highlight"><pre><span class="nx">def</span> <span class="nx">get_incrementer</span><span class="p">()</span><span class="o">:</span>
+    <span class="nx">i</span> <span class="o">=</span> <span class="cp">[</span><span class="mi">0</span><span class="cp">]</span>
+    <span class="nx">def</span> <span class="kd">function</span><span class="p">()</span><span class="o">:</span>
+        <span class="nx">i</span><span class="cp">[</span><span class="mi">0</span><span class="cp">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="nx">i</span><span class="cp">[</span><span class="mi">0</span><span class="cp">]</span>
+    <span class="k">return</span> <span class="kd">function</span>
+
+<span class="o">&gt;&gt;</span> <span class="nx">f</span> <span class="o">=</span> <span class="nx">get_incrementer</span><span class="p">()</span>
+<span class="o">&gt;&gt;</span> <span class="nx">f</span><span class="p">()</span>
+<span class="mi">1</span>
+<span class="o">&gt;&gt;</span> <span class="nx">f</span><span class="p">()</span>
+<span class="mi">2</span>
+<span class="o">&gt;&gt;</span> <span class="nx">f</span><span class="p">()</span>
+<span class="mi">3</span>
+</pre></div>
+
+
+<p>Let's say that instead of using the pattern given above, we defined <code>incrementer</code> to be a method of a class and used it 
+to increment a normal class attribute.</p>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">def</span> <span class="nf">incrementer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_i</span>
+
+<span class="o">&gt;&gt;</span> <span class="n">test</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span>
+<span class="o">&gt;&gt;</span> <span class="n">test</span><span class="o">.</span><span class="n">incrementer</span><span class="p">()</span> 
+<span class="mi">1</span>
+<span class="o">&gt;&gt;</span> <span class="n">test</span><span class="o">.</span><span class="n">incrementer</span><span class="p">()</span>
+<span class="mi">2</span>
+<span class="o">&gt;&gt;</span> <span class="n">test</span><span class="o">.</span><span class="n">_i</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="o">&gt;&gt;</span> <span class="n">test</span><span class="o">.</span><span class="n">incrementer</span><span class="p">()</span>
+<span class="mi">101</span>
+</pre></div>
+
+
+<p>This works, but of course one can always just modify <code>test._i</code>, so subsequent calls to incrementer might not always 
+behave as expected. </p>
+<p>So closures can be used to protect a variable. I don't think I've come across anyone that does this in practice, and I've 
+seen some discussion that it might not be a good idea, but I don't really understand why. </p>
+<p>A much more common use case for closures in Python, and one that I now make use of myself, is 
+<a href="https://www.python.org/dev/peps/pep-0318/"><em>function decoration</em></a>. Function decorators 
+are a powerful concept that allow you to modify a function's behavior without changing its implementation. </p>
+<p>For example, let's say you're writing an application and decide you want to log every call to a set of functions. 
+You could implement your functions to have logging statements sprinkled throughout, mixing logging code together with
+the rest of your code. But this makes for code that is hard to read and maintain. </p>
+<p>Instead, you can use a function decorator to handle the logging for you keeping the logging features separate from your 
+application code. This is called <a href="https://en.wikipedia.org/wiki/Separation_of_concerns"><em>separation of concerns</em></a> and is 
+central to a programming paradigm known as <a href="https://en.wikipedia.org/wiki/Aspect-oriented_programming"><em>aspect oriented programming</em></a>. </p>
+<p>Let's write a logging decorator that logs the name of the function call, the arguments passed to the function, and 
+the return value.</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">log_me</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">function_wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&#39;Calling function {:}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">func_name</span><span class="p">)</span>
+        <span class="n">args_list</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">])</span>
+        <span class="k">print</span> <span class="s">&#39;Positional arguments: {:}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">args_list</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&#39;Keyword arguments: {:}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c"># Call the original function</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">print</span> <span class="s">&#39;Return: {:}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">function_wrapper</span>
+</pre></div>
+
+
+<p><code>log_me</code> takes a function as an argument and returns a function (a decorator must return a function). The function that 
+we return, defined within the scope of <code>log_me</code> is called <code>function_wrapper</code> and it closes over the argument <code>func</code>. 
+<code>function_wrapper</code> takes in a set of arguments, logs them, calls the decorated function <code>func</code>, and finally
+logs the result. </p>
+<p><strong>A side note</strong> I know I'm not really "logging" here, per se, but just printing to standard output. In principle one should 
+use the <a href="https://docs.python.org/2/library/logging.html">logging module</a> or something similar.</p>
+<p>To <em>use</em> <code>log_me</code> we can use the Python decorator syntax (which you're familiar with if you've used e.g. <a href="http://flask.pocoo.org/">flask</a> 
+or many other popular Python packages that use decorators):</p>
+<div class="highlight"><pre>@log_me
+def adder(a, b, **kwargs):
+    return a + b
+
+@log_me
+def multiplier(a, b, **kwargs):
+    return a * b
+</pre></div>
+
+
+<p>Here I've defined two simple functions and decorated them with <code>log_me</code>. Equivalently I could have just done:</p>
+<div class="highlight"><pre>def multiplier(a, b, **kwargs):
+    return a * b
+multiplier = log_me(multiplier)
+</pre></div>
+
+
+<p>Anyway, the result is that when I call either of these two functions, their inputs and outputs get logged.</p>
+<div class="highlight"><pre><span class="o">&gt;&gt;</span> <span class="nx">adder</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="nx">another</span><span class="o">=</span><span class="s1">&#39;argument&#39;</span><span class="p">)</span>
+<span class="nx">Calling</span> <span class="kd">function</span> <span class="nx">adder</span>
+<span class="nx">Positional</span> <span class="nx">arguments</span><span class="o">:</span> <span class="mi">1</span> <span class="mi">2</span>
+<span class="nx">Keyword</span> <span class="nx">arguments</span><span class="o">:</span> <span class="p">{</span><span class="s1">&#39;another&#39;</span><span class="o">:</span> <span class="s1">&#39;argument&#39;</span><span class="p">}</span>
+<span class="nx">Return</span><span class="o">:</span> <span class="mi">3</span>
+
+<span class="o">&gt;&gt;</span> <span class="nx">multiplier</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="nx">another</span><span class="o">=</span><span class="s1">&#39;argument&#39;</span><span class="p">)</span>
+<span class="nx">Calling</span> <span class="kd">function</span> <span class="nx">multiplier</span>
+<span class="nx">Positional</span> <span class="nx">arguments</span><span class="o">:</span> <span class="mi">1</span> <span class="mi">2</span>
+<span class="nx">Keyword</span> <span class="nx">arguments</span><span class="o">:</span> <span class="p">{</span><span class="s1">&#39;another&#39;</span><span class="o">:</span> <span class="s1">&#39;argument&#39;</span><span class="p">}</span>
+<span class="nx">Return</span><span class="o">:</span> <span class="mi">12</span>
+</pre></div>
+
+
+<p>This is really cool. We have now separated the logging code entirely from the rest of our code, making everything
+easier to read and maintain. It's also super easy to start logging new functions. Just add the <code>log_me</code> decorator! And
+all of this is made possible by closures.</p>
+            </div>
+            <!-- /.entry-content -->
+    <hr/>
+    <section class="comments" id="comments">
+        <h2>Comments</h2>
+
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'michaelryanbellcom'; // required: replace example with your forum shortname
+
+                    var disqus_identifier = 'python_closures';
+                var disqus_url = 'http://michaelryanbell.com/python_closures.html';
+
+            var disqus_config = function () {
+                this.language = "en";
+            };
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function () {
+                var dsq = document.createElement('script');
+                dsq.type = 'text/javascript';
+                dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+            Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    </section>
+        </article>
+    </section>
+
+        </div>
+        <div class="col-sm-3" id="sidebar">
+            <aside>
+
+<section class="well well-sm">
+    <ul class="list-group list-group-flush">
+            <li class="list-group-item"><h4><i class="fa fa-home fa-lg"></i><span class="icon-label">Social</span></h4>
+              <ul class="list-group" id="social">
+                <li class="list-group-item"><a href="https://twitter.com/mryanbell"><i class="fa fa-twitter-square fa-lg"></i> Twitter</a></li>
+                <li class="list-group-item"><a href="https://github.com/mrbell"><i class="fa fa-github-square fa-lg"></i> GitHub</a></li>
+              </ul>
+            </li>
+
+
+
+            <li class="list-group-item"><a href="http://michaelryanbell.com/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
+                <ul class="list-group " id="tags">
+                    <li class="list-group-item tag-1">
+                        <a href="http://michaelryanbell.com/tag/how-to.html">
+                            how-to
+                        </a>
+                    </li>
+                    <li class="list-group-item tag-4">
+                        <a href="http://michaelryanbell.com/tag/ipython.html">
+                            ipython
+                        </a>
+                    </li>
+                    <li class="list-group-item tag-4">
+                        <a href="http://michaelryanbell.com/tag/spark.html">
+                            spark
+                        </a>
+                    </li>
+                    <li class="list-group-item tag-4">
+                        <a href="http://michaelryanbell.com/tag/python.html">
+                            python
+                        </a>
+                    </li>
+                </ul>
+            </li>
+    </ul>
+</section>
+            </aside>
+        </div>
+    </div>
+</div>
+<footer>
+   <div class="container">
+      <hr>
+      <div class="row">
+         <div class="col-xs-10">&copy; 2015 Michael Bell
+            &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+            <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
+            <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
+         <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>
+      </div>
+   </div>
+</footer>
+<script src="http://michaelryanbell.com/theme/js/jquery.min.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="http://michaelryanbell.com/theme/js/bootstrap.min.js"></script>
+
+<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+<script src="http://michaelryanbell.com/theme/js/respond.min.js"></script>
+
+    <!-- Disqus -->
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'michaelryanbellcom'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function () {
+            var s = document.createElement('script');
+            s.async = true;
+            s.type = 'text/javascript';
+            s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+        }());
+    </script>
+    <!-- End Disqus Code -->
+    <!-- Google Analytics -->
+    <script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-59163082-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function () {
+            var ga = document.createElement('script');
+            ga.type = 'text/javascript';
+            ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+    <!-- End Google Analytics Code -->
+
+</body>
+</html>

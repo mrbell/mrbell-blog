@@ -1,5 +1,205 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Michael Bell</title><link href="http://michaelryanbell.com/" rel="alternate"></link><link href="http://michaelryanbell.com/feeds/all.atom.xml" rel="self"></link><id>http://michaelryanbell.com/</id><updated>2014-02-11T00:00:00-05:00</updated><entry><title>Processing whole files from S3 with Spark</title><link href="http://michaelryanbell.com/processing-whole-files-spark-s3.html" rel="alternate"></link><updated>2014-02-11T00:00:00-05:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2014-02-11:processing-whole-files-spark-s3.html</id><summary type="html">&lt;p&gt;I have recently started diving into &lt;a href="https://spark.apache.org/"&gt;Apache Spark&lt;/a&gt; for a project at work and ran into issues trying to process the contents of a collection of files in parallel, particularly when the files are stored on Amazon S3. In this post I describe my problem and how I got around it.&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Michael Bell</title><link href="http://michaelryanbell.com/" rel="alternate"></link><link href="http://michaelryanbell.com/feeds/all.atom.xml" rel="self"></link><id>http://michaelryanbell.com/</id><updated>2015-08-16T00:00:00-04:00</updated><entry><title>Closures in Python</title><link href="http://michaelryanbell.com/python_closures.html" rel="alternate"></link><updated>2015-08-16T00:00:00-04:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2015-08-16:python_closures.html</id><summary type="html">&lt;p&gt;The concept of &lt;a href="https://en.wikipedia.org/wiki/Closure_(computer_programming)"&gt;&lt;em&gt;closures&lt;/em&gt;&lt;/a&gt; is something that I've been 
+familiar with for a while, but I haven't used in my own work until recently. I started thinking more about closures while reading 
+&lt;a href="http://www.amazon.com/Software-Engineer-Learns-JavaScript-jQuery-ebook/dp/B00GAMTRI8"&gt;A Software Engineer Learns HTML5, JavaScript and jQuery&lt;/a&gt; 
+by Dane Cameron (an excellent book, btw). They are introduced in the book as a way to protect object members. 
+In JS, like in Python, members of an object are public. In the absence of a &lt;em&gt;private&lt;/em&gt; keyword or the like, one can use 
+closures to protect state variables from tampering by external code. Here's an example:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="p"&gt;;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="nx"&gt;f&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="nx"&gt;f&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+&lt;span class="nx"&gt;f&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;span class="nx"&gt;f&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;
+&lt;span class="p"&gt;...&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;What has happened here is that the function returned by &lt;code&gt;incrementer&lt;/code&gt; has "closed" over &lt;code&gt;i&lt;/code&gt;. &lt;code&gt;i&lt;/code&gt; is declared in the scope 
+of &lt;code&gt;incrementer&lt;/code&gt; but is accessible within &lt;code&gt;function&lt;/code&gt;. Since &lt;code&gt;function&lt;/code&gt; refers to &lt;code&gt;i&lt;/code&gt;, the variable gets carried around 
+by &lt;code&gt;function&lt;/code&gt; &lt;em&gt;even after &lt;code&gt;incrementer&lt;/code&gt; has returned.&lt;/em&gt; &lt;/p&gt;
+&lt;p&gt;The utility of this pattern is that &lt;code&gt;i&lt;/code&gt; can be modifed (incremented) by calling &lt;code&gt;f&lt;/code&gt;, the function returned by &lt;code&gt;incrementer&lt;/code&gt;, but 
+it can't be accessed directly in any other way. &lt;/p&gt;
+&lt;p&gt;I hadn't seen closures mentioned often in Python circles, at least not in scientific and data analysis contexts. But as I 
+learned about closures in JS I couldn't help but wonder how they operate in Python, my language of choice. So does this 
+same code pattern work in Python?&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;function&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+        &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;function&lt;/span&gt;
+
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="o"&gt;---------------------------------------------------------------------------&lt;/span&gt;
+&lt;span class="ne"&gt;UnboundLocalError&lt;/span&gt;                         &lt;span class="n"&gt;Traceback&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;most&lt;/span&gt; &lt;span class="n"&gt;recent&lt;/span&gt; &lt;span class="n"&gt;call&lt;/span&gt; &lt;span class="n"&gt;last&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;ipython&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nb"&gt;input&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="n"&gt;ec059b9bfe1&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;module&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="o"&gt;----&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;ipython&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nb"&gt;input&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;fe458f37d60a&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;function&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+      &lt;span class="mi"&gt;2&lt;/span&gt;     &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+      &lt;span class="mi"&gt;3&lt;/span&gt;     &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;function&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+&lt;span class="o"&gt;----&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt;         &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+      &lt;span class="mi"&gt;5&lt;/span&gt;         &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;
+      &lt;span class="mi"&gt;6&lt;/span&gt;     &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;function&lt;/span&gt;
+
+&lt;span class="ne"&gt;UnboundLocalError&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;local&lt;/span&gt; &lt;span class="n"&gt;variable&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;i&amp;#39;&lt;/span&gt; &lt;span class="n"&gt;referenced&lt;/span&gt; &lt;span class="n"&gt;before&lt;/span&gt; &lt;span class="n"&gt;assignment&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Nope. We get an &lt;code&gt;UnboundLocalError&lt;/code&gt;. What if we just refer to &lt;code&gt;i&lt;/code&gt; rather than try to increment it's value?&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;120&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;function&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;function&lt;/span&gt;
+
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="mi"&gt;120&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;That works fine. Well, &lt;code&gt;incrementer&lt;/code&gt; no longer increments anything, but at least the code executes without error. So what 
+happened here? In Python, you can access a variable from a parent scope, but you can't overwrite it. Assignment in Python is
+done within the local scope, even if a variable with the same name is declared in a parent 
+scope. The parent variable is not overridden, but instead a new variable is created in the nested scope. 
+Take the following code for example:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;120&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;function&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+        &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;function&lt;/span&gt;
+
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="mi"&gt;10&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The &lt;code&gt;i&lt;/code&gt; declared in &lt;code&gt;function&lt;/code&gt; is local to the nested function and "shadows" the &lt;code&gt;i&lt;/code&gt; declared in &lt;code&gt;incrementer&lt;/code&gt;.  &lt;/p&gt;
+&lt;p&gt;Although we can't overwrite a variable in a parent scope, we can modify its contents &lt;em&gt;if the object is a 
+mutable type&lt;/em&gt; like a list or an object. So to replicate the JS style closure in Python, one could close over a
+mutable object, e.g.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_incrementer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="nx"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="cp"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="cp"&gt;]&lt;/span&gt;
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="cp"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="cp"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="cp"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="cp"&gt;]&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt;
+
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;f&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;get_incrementer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;f&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="mi"&gt;1&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;f&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;f&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="mi"&gt;3&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Let's say that instead of using the pattern given above, we defined &lt;code&gt;incrementer&lt;/code&gt; to be a method of a class and used it 
+to increment a normal class attribute.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;MyClass&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;object&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_i&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_i&lt;/span&gt;
+
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;test&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MyClass&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; 
+&lt;span class="mi"&gt;1&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="mi"&gt;101&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This works, but of course one can always just modify &lt;code&gt;test._i&lt;/code&gt;, so subsequent calls to incrementer might not always 
+behave as expected. &lt;/p&gt;
+&lt;p&gt;So closures can be used to protect a variable. I don't think I've come across anyone that does this in practice, and I've 
+seen some discussion that it might not be a good idea, but I don't really understand why. &lt;/p&gt;
+&lt;p&gt;A much more common use case for closures in Python, and one that I now make use of myself, is 
+&lt;a href="https://www.python.org/dev/peps/pep-0318/"&gt;&lt;em&gt;function decoration&lt;/em&gt;&lt;/a&gt;. Function decorators 
+are a powerful concept that allow you to modify a function's behavior without changing its implementation. &lt;/p&gt;
+&lt;p&gt;For example, let's say you're writing an application and decide you want to log every call to a set of functions. 
+You could implement your functions to have logging statements sprinkled throughout, mixing logging code together with
+the rest of your code. But this makes for code that is hard to read and maintain. &lt;/p&gt;
+&lt;p&gt;Instead, you can use a function decorator to handle the logging for you keeping the logging features separate from your 
+application code. This is called &lt;a href="https://en.wikipedia.org/wiki/Separation_of_concerns"&gt;&lt;em&gt;separation of concerns&lt;/em&gt;&lt;/a&gt; and is 
+central to a programming paradigm known as &lt;a href="https://en.wikipedia.org/wiki/Aspect-oriented_programming"&gt;&lt;em&gt;aspect oriented programming&lt;/em&gt;&lt;/a&gt;. &lt;/p&gt;
+&lt;p&gt;Let's write a logging decorator that logs the name of the function call, the arguments passed to the function, and 
+the return value.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;log_me&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;function_wrapper&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Calling function {:}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;func_name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;args_list&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;#39; &amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;join&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="nb"&gt;str&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Positional arguments: {:}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;args_list&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Keyword arguments: {:}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="c"&gt;# Call the original function&lt;/span&gt;
+        &lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Return: {:}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;function_wrapper&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;log_me&lt;/code&gt; takes a function as an argument and returns a function (a decorator must return a function). The function that 
+we return, defined within the scope of &lt;code&gt;log_me&lt;/code&gt; is called &lt;code&gt;function_wrapper&lt;/code&gt; and it closes over the argument &lt;code&gt;func&lt;/code&gt;. 
+&lt;code&gt;function_wrapper&lt;/code&gt; takes in a set of arguments, logs them, calls the decorated function &lt;code&gt;func&lt;/code&gt;, and finally
+logs the result. &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;A side note&lt;/strong&gt; I know I'm not really "logging" here, per se, but just printing to standard output. In principle one should 
+use the &lt;a href="https://docs.python.org/2/library/logging.html"&gt;logging module&lt;/a&gt; or something similar.&lt;/p&gt;
+&lt;p&gt;To &lt;em&gt;use&lt;/em&gt; &lt;code&gt;log_me&lt;/code&gt; we can use the Python decorator syntax (which you're familiar with if you've used e.g. &lt;a href="http://flask.pocoo.org/"&gt;flask&lt;/a&gt; 
+or many other popular Python packages that use decorators):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;@log_me
+def adder(a, b, **kwargs):
+    return a + b
+
+@log_me
+def multiplier(a, b, **kwargs):
+    return a * b
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Here I've defined two simple functions and decorated them with &lt;code&gt;log_me&lt;/code&gt;. Equivalently I could have just done:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;def multiplier(a, b, **kwargs):
+    return a * b
+multiplier = log_me(multiplier)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Anyway, the result is that when I call either of these two functions, their inputs and outputs get logged.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;adder&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;another&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;argument&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="nx"&gt;Calling&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;adder&lt;/span&gt;
+&lt;span class="nx"&gt;Positional&lt;/span&gt; &lt;span class="nx"&gt;arguments&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;span class="nx"&gt;Keyword&lt;/span&gt; &lt;span class="nx"&gt;arguments&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;another&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;argument&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="nx"&gt;Return&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;
+
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;multiplier&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;another&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;argument&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="nx"&gt;Calling&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;multiplier&lt;/span&gt;
+&lt;span class="nx"&gt;Positional&lt;/span&gt; &lt;span class="nx"&gt;arguments&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;span class="nx"&gt;Keyword&lt;/span&gt; &lt;span class="nx"&gt;arguments&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;another&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;argument&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="nx"&gt;Return&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;12&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This is really cool. We have now separated the logging code entirely from the rest of our code, making everything
+easier to read and maintain. It's also super easy to start logging new functions. Just add the &lt;code&gt;log_me&lt;/code&gt; decorator! And
+all of this is made possible by closures.&lt;/p&gt;</summary><category term="python"></category></entry><entry><title>Processing whole files from S3 with Spark</title><link href="http://michaelryanbell.com/processing-whole-files-spark-s3.html" rel="alternate"></link><updated>2015-02-11T00:00:00-05:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2015-02-11:processing-whole-files-spark-s3.html</id><summary type="html">&lt;p&gt;I have recently started diving into &lt;a href="https://spark.apache.org/"&gt;Apache Spark&lt;/a&gt; for a project at work and ran into issues trying to process the contents of a collection of files in parallel, particularly when the files are stored on Amazon S3. In this post I describe my problem and how I got around it.&lt;/p&gt;
 &lt;p&gt;My first Spark project is simple. I have a single function that processes data from a file and a lot of data files to process using this function. It should be trivial to distribute this task, right? Just create an RDD (Spark's core data container, basically a distributed collection whose items can be operated on in parallel) where each item contains the contents of a single file and apply my function using the RDD methods &lt;code&gt;foreach&lt;/code&gt; or &lt;code&gt;map&lt;/code&gt; if I want to capture results for logging or something. &lt;/p&gt;
 &lt;p&gt;Most examples I found for &lt;code&gt;pyspark&lt;/code&gt; create RDDs using the &lt;code&gt;SparkContext.textFile()&lt;/code&gt; method. This generates an RDD where each line of the file is an item in the collection. This is not what I want. Looking through the API docs I found the method &lt;code&gt;SparkContext.wholeTextFiles()&lt;/code&gt; that appears to do exactly what I want. I can point this method to a directory and it will create an RDD where each item contains data from an entire file. Perfect! Well, it would be if it worked anyway.&lt;/p&gt;
 &lt;p&gt;Here's the issue... our data files are stored on Amazon S3, and for whatever reason this method fails when reading data from S3 (using Spark v1.2.0). I'm using &lt;a href="https://spark.apache.org/docs/1.2.1/api/python/pyspark.html"&gt;&lt;code&gt;pyspark&lt;/code&gt;&lt;/a&gt; but I've read in forums that people are having the same issue with the Scala library, so it's not just a Python issue. Anyway, here's how I got around this problem.&lt;/p&gt;
@@ -10,15 +210,7 @@
 &lt;span class="c"&gt;# inkey_root is the S3 &amp;#39;directory&amp;#39; in which your files are located&lt;/span&gt;
 &lt;span class="n"&gt;keys&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;list&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;prefix&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;inkey_root&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 
-&lt;span class="n"&gt;keylist&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;keys&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-
-&lt;span class="c"&gt;# Create a file on S3 in a scratch directory that &lt;/span&gt;
-&lt;span class="c"&gt;# contains the file listing, one path per line.&lt;/span&gt;
-&lt;span class="n"&gt;filelist&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;boto&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;s3&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Key&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-
-&lt;span class="c"&gt;# scratchkey_root is the scratch directory where you want the file listing stored&lt;/span&gt;
-&lt;span class="n"&gt;filelist&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;join&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;scratchkey_root&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;filelist.txt&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  
-&lt;span class="n"&gt;filelist&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;set_contents_from_string&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;join&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;keylist&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="n"&gt;key_list&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;keys&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
 
 &lt;span class="n"&gt;conn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;close&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -46,14 +238,15 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;Then I create an RDD using &lt;code&gt;textFile&lt;/code&gt; on the file listing file. The RDD items will be the paths (ok fine, &lt;em&gt;keys&lt;/em&gt;) of the files that I want to process in S3.  Then I call the RDD's &lt;code&gt;map&lt;/code&gt; method, using &lt;code&gt;fetch_data&lt;/code&gt; to parse the files and pass their contents along as a new RDD with the file contents as items, just like I wanted from &lt;code&gt;wholeTextFiles&lt;/code&gt; in the first place. Then you can go ahead and process the resulting data as necessary, e.g. by chaining a call to another &lt;code&gt;map&lt;/code&gt;, &lt;code&gt;foreach&lt;/code&gt; or whatever. Here's the code, with a chained call to &lt;code&gt;foreach&lt;/code&gt; to process the data using a function &lt;code&gt;process_data&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Then I create an RDD using &lt;code&gt;parallelize&lt;/code&gt; on the listing of files to process. The RDD items will be the paths (ok fine, &lt;em&gt;keys&lt;/em&gt;) of the files that I want to process in S3.  Then I call the RDD's &lt;code&gt;map&lt;/code&gt; method, using &lt;code&gt;fetch_data&lt;/code&gt; to parse the files and pass their contents along as a new RDD with the file contents as items, just like I wanted from &lt;code&gt;wholeTextFiles&lt;/code&gt; in the first place. Then you can go ahead and process the resulting data as necessary, e.g. by chaining a call to another &lt;code&gt;map&lt;/code&gt;, &lt;code&gt;foreach&lt;/code&gt; or whatever. Here's the code, with a chained call to &lt;code&gt;foreach&lt;/code&gt; to process the data using a function &lt;code&gt;process_data&lt;/code&gt;.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sc&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pyspark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SparkContext&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;local&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Whatever&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="n"&gt;lines&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sc&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;textFile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;s3n://&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;bucket&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;scratchkey_root&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/filelist.txt&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="n"&gt;lines&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;map&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fetch_data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;foreach&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;process_data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="c"&gt;# Create an RDD from the list of s3 key names to process stored in key_list&lt;/span&gt;
+&lt;span class="n"&gt;file_list&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sc&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parallelize&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key_list&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;file_list&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;map&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fetch_data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;foreach&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;process_data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;So there you have it, a simple way to get around the fact that Spark's &lt;code&gt;wholeTextFiles&lt;/code&gt; (as of now) does not work with files stored in S3.&lt;/p&gt;</summary><category term="spark"></category><category term="how-to"></category></entry><entry><title>Spell checking an IPython notebook</title><link href="http://michaelryanbell.com/ipynb-spellchecking.html" rel="alternate"></link><updated>2014-02-01T00:00:00-05:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2014-02-01:ipynb-spellchecking.html</id><summary type="html">&lt;p&gt;I've been using &lt;a href="http://ipython.org/notebook.html"&gt;IPython notebooks&lt;/a&gt; a lot lately for both my personal and professional 
+&lt;p&gt;So there you have it, a simple way to get around the fact that Spark's &lt;code&gt;wholeTextFiles&lt;/code&gt; (as of now) does not work with files stored in S3.&lt;/p&gt;</summary><category term="spark"></category><category term="how-to"></category></entry><entry><title>Spell checking an IPython notebook</title><link href="http://michaelryanbell.com/ipynb-spellchecking.html" rel="alternate"></link><updated>2015-02-01T00:00:00-05:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2015-02-01:ipynb-spellchecking.html</id><summary type="html">&lt;p&gt;I've been using &lt;a href="http://ipython.org/notebook.html"&gt;IPython notebooks&lt;/a&gt; a lot lately for both my personal and professional 
 research and analysis projects. It's a great tool for keeping code, visualization and analysis together in one place. 
 It's also convenient for communicating results. Just export your notebook to HTML and it's ready to distribute... except 
 for the fact that without a spell checker I tend to have a lot of typos in my markdown cells. &lt;/p&gt;

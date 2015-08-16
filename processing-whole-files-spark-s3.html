@@ -21,7 +21,7 @@
         <meta property="og:title" content="Processing whole files from S3 with Spark"/>
         <meta property="og:url" content="http://michaelryanbell.com/processing-whole-files-spark-s3.html"/>
         <meta property="og:description" content="I have recently started diving into Apache Spark for a project at work and ran into issues trying to process the contents of a collection of files in parallel, particularly when the files are stored on Amazon S3. In this post I describe my problem and how I got around ..."/>
-        <meta property="article:published_time" content="2014-02-11" />
+        <meta property="article:published_time" content="2015-02-11" />
             <meta property="article:section" content="Blog" />
             <meta property="article:tag" content="spark" />
             <meta property="article:tag" content="how-to" />
@@ -89,7 +89,7 @@ Michael Bell            </a>
 <footer class="post-info">
     <span class="label label-default">Date</span>
     <span class="published">
-        <i class="fa fa-calendar"></i><time datetime="2014-02-11T00:00:00-05:00"> Tue 11 February 2014</time>
+        <i class="fa fa-calendar"></i><time datetime="2015-02-11T00:00:00-05:00"> Wed 11 February 2015</time>
     </span>
 
 
@@ -112,15 +112,7 @@ Michael Bell            </a>
 <span class="c"># inkey_root is the S3 &#39;directory&#39; in which your files are located</span>
 <span class="n">keys</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">inkey_root</span><span class="p">)</span>
 
-<span class="n">keylist</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span>
-
-<span class="c"># Create a file on S3 in a scratch directory that </span>
-<span class="c"># contains the file listing, one path per line.</span>
-<span class="n">filelist</span> <span class="o">=</span> <span class="n">boto</span><span class="o">.</span><span class="n">s3</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">Key</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
-
-<span class="c"># scratchkey_root is the scratch directory where you want the file listing stored</span>
-<span class="n">filelist</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">scratchkey_root</span><span class="p">,</span> <span class="s">&#39;filelist.txt&#39;</span><span class="p">)</span>  
-<span class="n">filelist</span><span class="o">.</span><span class="n">set_contents_from_string</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">keylist</span><span class="p">))</span>
+<span class="n">key_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span>
 
 <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
@@ -148,10 +140,11 @@ Michael Bell            </a>
 </pre></div>
 
 
-<p>Then I create an RDD using <code>textFile</code> on the file listing file. The RDD items will be the paths (ok fine, <em>keys</em>) of the files that I want to process in S3.  Then I call the RDD's <code>map</code> method, using <code>fetch_data</code> to parse the files and pass their contents along as a new RDD with the file contents as items, just like I wanted from <code>wholeTextFiles</code> in the first place. Then you can go ahead and process the resulting data as necessary, e.g. by chaining a call to another <code>map</code>, <code>foreach</code> or whatever. Here's the code, with a chained call to <code>foreach</code> to process the data using a function <code>process_data</code>.</p>
+<p>Then I create an RDD using <code>parallelize</code> on the listing of files to process. The RDD items will be the paths (ok fine, <em>keys</em>) of the files that I want to process in S3.  Then I call the RDD's <code>map</code> method, using <code>fetch_data</code> to parse the files and pass their contents along as a new RDD with the file contents as items, just like I wanted from <code>wholeTextFiles</code> in the first place. Then you can go ahead and process the resulting data as necessary, e.g. by chaining a call to another <code>map</code>, <code>foreach</code> or whatever. Here's the code, with a chained call to <code>foreach</code> to process the data using a function <code>process_data</code>.</p>
 <div class="highlight"><pre><span class="n">sc</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">SparkContext</span><span class="p">(</span><span class="s">&#39;local&#39;</span><span class="p">,</span> <span class="s">&#39;Whatever&#39;</span><span class="p">)</span>
-<span class="n">lines</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">textFile</span><span class="p">(</span><span class="s">&#39;s3n://&#39;</span><span class="o">+</span><span class="n">bucket</span><span class="o">+</span><span class="s">&quot;/&quot;</span><span class="o">+</span><span class="n">scratchkey_root</span><span class="o">+</span><span class="s">&quot;/filelist.txt&quot;</span><span class="p">)</span>
-<span class="n">lines</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">fetch_data</span><span class="p">)</span><span class="o">.</span><span class="n">foreach</span><span class="p">(</span><span class="n">process_data</span><span class="p">)</span>
+<span class="c"># Create an RDD from the list of s3 key names to process stored in key_list</span>
+<span class="n">file_list</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="p">(</span><span class="n">key_list</span><span class="p">)</span>
+<span class="n">file_list</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">fetch_data</span><span class="p">)</span><span class="o">.</span><span class="n">foreach</span><span class="p">(</span><span class="n">process_data</span><span class="p">)</span>
 </pre></div>
 
 
@@ -223,6 +216,11 @@ Michael Bell            </a>
                             spark
                         </a>
                     </li>
+                    <li class="list-group-item tag-4">
+                        <a href="http://michaelryanbell.com/tag/python.html">
+                            python
+                        </a>
+                    </li>
                 </ul>
             </li>
     </ul>
@@ -235,7 +233,7 @@ Michael Bell            </a>
    <div class="container">
       <hr>
       <div class="row">
-         <div class="col-xs-10">&copy; 2014 Michael Bell
+         <div class="col-xs-10">&copy; 2015 Michael Bell
             &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
             <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
             <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>

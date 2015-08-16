@@ -2,7 +2,7 @@
 <html lang="en"
 >
 <head>
-    <title>Spell checking an IPython notebook - Michael Bell</title>
+    <title>Correcting digit bias in customer survey data - Michael Bell</title>
     <!-- Using the latest rendering mode for IE -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
@@ -10,21 +10,21 @@
 
 
 
-<link rel="canonical" href="http://michaelryanbell.com/ipynb-spellchecking.html">
+<link rel="canonical" href="http://michaelryanbell.com/drafts/digit_bias_correction.html">
 
         <meta name="author" content="Michael Bell" />
-        <meta name="keywords" content="ipython,how-to" />
-        <meta name="description" content="I&#39;ve been using IPython notebooks a lot lately for both my personal and professional research and analysis projects. It&#39;s a great tool for keeping code, visualization and analysis together in one place. It&#39;s also convenient for communicating results. Just export your notebook to HTML and it&#39;s ..." />
+        <meta name="keywords" content="statistics,data" />
+        <meta name="description" content="Surveying customers or a sample of a population as part of an experiment can provide important insight into the opinions, behaviors, or experiences that people have. In some cases surveys are the only feasible option for measuring something in a scalable and unbiased way. But the data that results can ..." />
 
         <meta property="og:site_name" content="Michael Bell" />
         <meta property="og:type" content="article"/>
-        <meta property="og:title" content="Spell checking an IPython notebook"/>
-        <meta property="og:url" content="http://michaelryanbell.com/ipynb-spellchecking.html"/>
-        <meta property="og:description" content="I&#39;ve been using IPython notebooks a lot lately for both my personal and professional research and analysis projects. It&#39;s a great tool for keeping code, visualization and analysis together in one place. It&#39;s also convenient for communicating results. Just export your notebook to HTML and it&#39;s ..."/>
-        <meta property="article:published_time" content="2015-02-01" />
+        <meta property="og:title" content="Correcting digit bias in customer survey data"/>
+        <meta property="og:url" content="http://michaelryanbell.com/drafts/digit_bias_correction.html"/>
+        <meta property="og:description" content="Surveying customers or a sample of a population as part of an experiment can provide important insight into the opinions, behaviors, or experiences that people have. In some cases surveys are the only feasible option for measuring something in a scalable and unbiased way. But the data that results can ..."/>
+        <meta property="article:published_time" content="2015-03-21" />
             <meta property="article:section" content="Blog" />
-            <meta property="article:tag" content="ipython" />
-            <meta property="article:tag" content="how-to" />
+            <meta property="article:tag" content="statistics" />
+            <meta property="article:tag" content="data" />
             <meta property="article:author" content="Michael Bell" />
 
 
@@ -76,10 +76,10 @@ Michael Bell            </a>
         <article>
             <header class="page-header">
                 <h1>
-                    <a href="http://michaelryanbell.com/ipynb-spellchecking.html"
+                    <a href="http://michaelryanbell.com/drafts/digit_bias_correction.html"
                        rel="bookmark"
-                       title="Permalink to Spell checking an IPython notebook">
-                        Spell checking an IPython notebook
+                       title="Permalink to Correcting digit bias in customer survey data">
+                        Correcting digit bias in customer survey data
                     </a>
                 </h1>
             </header>
@@ -89,50 +89,45 @@ Michael Bell            </a>
 <footer class="post-info">
     <span class="label label-default">Date</span>
     <span class="published">
-        <i class="fa fa-calendar"></i><time datetime="2015-02-01T00:00:00-05:00"> Sun 01 February 2015</time>
+        <i class="fa fa-calendar"></i><time datetime="2015-03-21T00:00:00-04:00"> Sat 21 March 2015</time>
     </span>
 
 
 
 <span class="label label-default">Tags</span>
-	<a href="http://michaelryanbell.com/tag/ipython.html">ipython</a>
+	<a href="http://michaelryanbell.com/tag/statistics.html">statistics</a>
         /
-	<a href="http://michaelryanbell.com/tag/how-to.html">how-to</a>
+	<a href="http://michaelryanbell.com/tag/data.html">data</a>
     
 </footer><!-- /.post-info -->                    </div>
                 </div>
-                <p>I've been using <a href="http://ipython.org/notebook.html">IPython notebooks</a> a lot lately for both my personal and professional 
-research and analysis projects. It's a great tool for keeping code, visualization and analysis together in one place. 
-It's also convenient for communicating results. Just export your notebook to HTML and it's ready to distribute... except 
-for the fact that without a spell checker I tend to have a lot of typos in my markdown cells. </p>
-<p>I found a work-around that enables spell checking in the markdown cells of my notebooks from GitHub user 
-<a href="https://github.com/dsblank">dsblank</a> in the comments of the IPython project issue 
-<a href="https://github.com/ipython/ipython/issues/3216">here</a>. It is a bit hack-y and tedious but it works. </p>
-<p>To enable spell checking, do the following:</p>
-<ol>
-<li>
-<p>Install a custom extension with the following command</p>
-<div class="highlight"><pre>ipython install-nbextension https://bitbucket.org/ipre/calico/downloads/calico-spell-check-1.0.zip
-</pre></div>
-
-
-</li>
-<li>
-<p>Execute the following code in a cell of your notebook</p>
-<div class="highlight"><pre><span class="c">%%javascript</span>
-<span class="n">IPython</span><span class="p">.</span><span class="n">load_extensions</span><span class="p">(</span><span class="s">&#39;calico-spell-check&#39;</span><span class="p">)</span>
-</pre></div>
-
-
-</li>
-</ol>
-<p>You should now see a new button in the tool bar that, when checked, enables spell checking within your markdown cells. </p>
-<p>This functionality will only last for the current session of the current notebook. You'll have to repeat step 2 for each 
-notebook and for every session. <strong>And be sure to delete or comment the code from step 2 once you've executed it.</strong> I've 
-found that it causes problems (unexecutable markdown cells) if you happen to execute that block of code twice in one 
-session.</p>
-<p>Apart from the tedium of this solution, I've found that it works rather well. Hopefully this functionality will make it 
-into future release of the IPython notebook.</p>
+                <p>Surveying customers or a sample of a population as part of an experiment can provide important insight into the opinions, 
+behaviors, or experiences that people have. In some cases surveys are the only feasible option for measuring something in a
+scalable and unbiased way. But the data that results can be filled with errors and skewed by the biases of the respondents.
+In this post I will be discussing one particular form of bias that is common in survey data that I will refer to as
+<strong>digit bias</strong> or <strong>digit preference</strong>. This form of bias is common when respondents are asked to provide a numerical 
+value as a part of the survey, e.g. their weight, a time duration for an event, etc. </p>
+<p>Digit bias can arise due to a natural tendency to round values to a nearest multiple of 5 or 10, or due to skewed 
+perceptions. How would you respond if you were asked "What time did you get to work this morning?" Most people would 
+have a tendency to respond in multiples of 15 or 30 minutes, e.g. 8:30 even if they truly arrived at 8:23. Perhaps 
+different people would have a tendency to over or under estimate depending on who was asking the question or what the 
+assumed reaction might be? If you are expected to be at work by 9:00 and 
+arrive at 9:13, you might round that back to 9:00 either to try to deceive the person asking the question or out of 
+guilt for having been late. Conversely, one who was early might not think to round their answer as strongly, maybe 
+only to th nearest multiple of 5 minutes.</p>
+<p>I was recently working with some survey data, particularly focused on a question about a length of time of service, where
+digit bias was clearly evident. A histogram of the data showed an overwhelming tendency to round responses to a
+multiple of 5 minutes (the response is given as an integer number of minutes up to 999). Even more than that, after
+binning the data into 5 minute intervals, there was a secondary tendency to prefer multiples of 15 minutes, e.g. an
+answer of 45 minutes was significantly more prevalent than 40 or 50 minutes.</p>
+<p>Ultimately we were interested in the distribution of the time durations reported in the survey, and I wanted to find a 
+way to correct this very obvious bias present in the data because I suspected that it had the overall effect of skewing 
+the distribution.</p>
+<p>In researching ways of handling this particular issue, I found an excellent 2008 paper by Camarda, Eilers, and Gampe, 
+<a href="http://www.demogr.mpg.de/publications%5Cfiles%5C2945_1235560583_1_Camarda-Feb09-Sage.pdf">"Modelling general patterns of digit preference"</a>
+that provided a model for measuring and correcting such biases in data.</p>
+<p>One of the reasons why I found the paper so useful was that the authors actually published their code as a package in 
+R. </p>
             </div>
             <!-- /.entry-content -->
     <hr/>
@@ -144,8 +139,8 @@ into future release of the IPython notebook.</p>
             /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
             var disqus_shortname = 'michaelryanbellcom'; // required: replace example with your forum shortname
 
-                    var disqus_identifier = 'ipynb-spellchecking';
-                var disqus_url = 'http://michaelryanbell.com/ipynb-spellchecking.html';
+                    var disqus_identifier = 'digit_bias_correction';
+                var disqus_url = 'http://michaelryanbell.com/drafts/digit_bias_correction.html';
 
             var disqus_config = function () {
                 this.language = "en";
