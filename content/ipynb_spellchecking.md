@@ -1,5 +1,5 @@
 Title: Spell checking an IPython notebook
-Date: 2014-02-01
+Date: 2015-02-01
 Tags: ipython, how-to
 Slug: ipynb-spellchecking
 

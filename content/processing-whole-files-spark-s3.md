@@ -1,5 +1,5 @@
 Title: Processing whole files from S3 with Spark
-Date: 2014-02-11
+Date: 2015-02-11
 Tags: spark, how-to
 Slug: processing-whole-files-spark-s3
 
@@ -20,15 +20,7 @@ First, I create a listing of files in a root directory and store the listing in 
     # inkey_root is the S3 'directory' in which your files are located
     keys = b.list(prefix=inkey_root)  
     
-    keylist = [key.name for key in keys]
-    
-    # Create a file on S3 in a scratch directory that 
-    # contains the file listing, one path per line.
-    filelist = boto.s3.key.Key(b)
-    
-    # scratchkey_root is the scratch directory where you want the file listing stored
-    filelist.key = os.path.join(scratchkey_root, 'filelist.txt')  
-    filelist.set_contents_from_string("\n".join(keylist))
+    key_list = [key.name for key in keys]
     
     conn.close()
 
@@ -54,11 +46,12 @@ Next I need a function that takes a file path, parses the data from the file int
         # I use basename() to get just the file name itself
         return os.path.basename(s3key), data
 
-Then I create an RDD using `textFile` on the file listing file. The RDD items will be the paths (ok fine, *keys*) of the files that I want to process in S3.  Then I call the RDD's `map` method, using `fetch_data` to parse the files and pass their contents along as a new RDD with the file contents as items, just like I wanted from `wholeTextFiles` in the first place. Then you can go ahead and process the resulting data as necessary, e.g. by chaining a call to another `map`, `foreach` or whatever. Here's the code, with a chained call to `foreach` to process the data using a function `process_data`.
+Then I create an RDD using `parallelize` on the listing of files to process. The RDD items will be the paths (ok fine, *keys*) of the files that I want to process in S3.  Then I call the RDD's `map` method, using `fetch_data` to parse the files and pass their contents along as a new RDD with the file contents as items, just like I wanted from `wholeTextFiles` in the first place. Then you can go ahead and process the resulting data as necessary, e.g. by chaining a call to another `map`, `foreach` or whatever. Here's the code, with a chained call to `foreach` to process the data using a function `process_data`.
     
     :::python
     sc = pyspark.SparkContext('local', 'Whatever')
-    lines = sc.textFile('s3n://'+bucket+"/"+scratchkey_root+"/filelist.txt")
-    lines.map(fetch_data).foreach(process_data)
+    # Create an RDD from the list of s3 key names to process stored in key_list
+    file_list = sc.parallelize(key_list)
+    file_list.map(fetch_data).foreach(process_data)
 
 So there you have it, a simple way to get around the fact that Spark's `wholeTextFiles` (as of now) does not work with files stored in S3.
