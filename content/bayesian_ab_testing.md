@@ -1,7 +1,15 @@
 Title: Bayesian A/B testing with confidence
 Date: 2015-12-27
+Modified: 2015-12-30
 Tags: statistics, data
 Slug: bayesian_ab_testing
+
+**UPDATE (12/30/2015)**: In response to a comment by Niels Oppermann, I have added
+derivations of the expected difference $p_B-p_A$ in addition to the
+expected gain $\mathrm{max}\left(p_B-p_A, 0\right)$ (i.e. the difference when
+$p_B>p_A$).
+
+<!-- PELICAN_BEGIN_SUMMARY -->
 
 I have been developing the A/B testing procedure that I want to use in
 an upcoming experiment at work. Generally speaking I'm on team Bayes when it comes
@@ -15,9 +23,16 @@ decision function for A/B testing based on the gain expected from making the
 change that is under consideration. I go a bit further than the referenced posts
 by deriving a measure of uncertainty in the expected gain that can be used to
 determine when a result is significant and overcome the "peeking" problem discussed
-in Robinson's post. I also present some simulated examples to
-give a sense of the impact of the different parameters in the model and to
-illustrate some aspects of the model that one should be aware of.
+in Robinson's post. Lastly I calculate the expected difference between the two
+procedures under test (as opposed to the gain which is the difference but
+only when the new procedure is better).
+Throughout I present some simulated examples to give a sense of the impact of the
+different parameters in the model and to illustrate some aspects of the model
+that one should be aware of.
+
+<!-- PELICAN_END_SUMMARY -->
+
+##The basic model
 
 In an A/B test, one has two different procedures (i.e. treatments) under consideration
 and would like to know which one produces the best results. For example, an e-commerce
@@ -28,8 +43,6 @@ population. The control group A uses the standard procedure and the test group B
 uses the new procedure. At the end of the experiment the data is analyzed to
 decide whether the outcome for group B was better (or worse, or the same)
 than the outcome for group A.
-
-Let's set up the model that we'll use to evaluate a test outcome.
 
 In the simplest case, which I consider here, the outcome is binary,
 e.g. either a customer clicked through to a product page or they didn't.
@@ -75,6 +88,8 @@ distribution will become centered on the ratio $k/n$ and increasingly more narro
 
 ![Example Posterior Inference]({filename}/images/example_posterior_inference.png)
 
+##The probability that the new procedure is better
+
 Given the experimental data and the posterior distributions for p, how does one know
 that the new procedure is better than the old one i.e. that $p_{B}>p_{A}$? If you
 were looking at a plot like the one above after an experiment, with the max of $P(p_B | n_B, k_B)$
@@ -118,6 +133,8 @@ when in fact it is not. What is surprising to me is that the spread of results
 never narrows. Running a longer test wont reduce the chance that a high POI
 will be reported.
 
+##How much better is the new procedure?
+
 So POI isn't a great metric to base decisions on. Instead, I will
 use the *expected gain* to evaluate our results as described [in a blog post by Chris Stuccio](https://www.chrisstucchio.com/blog/2014/bayesian_ab_decision_rule.html).
 Note that the referenced article actually considers the expected loss. Again I am interested
@@ -130,7 +147,7 @@ that one outcome is better than the other,
 but also how much better the outcome will be. The metric is defined as
 $P\left(\mathrm{max}\left[p_B - p_A, 0\right]\right)$
 
-\begin{align}P(p_{B}-p_{A})&=\int_{0}^{1}\int_{0}^{1}dp_{A}dp_{B}\mathrm{max}\left[\left(p_{B}-p_{A}\right),\,0\right]\frac{p_{A}^{\alpha'_{A}-1}(1-p_{A})^{\beta'_{A}-1}}{\mathrm{B}(\alpha'_{A},\beta'_{A})}\frac{p_{B}^{\alpha'_{B}-1}(1-p_{B})^{\beta'_{B}-1}}{\mathrm{B}(\alpha'_{B},\beta'_{B})}\\
+\begin{align}P\left(\mathrm{max}\left[p_B-p_A,0\right]\right)&=\int_{0}^{1}\int_{0}^{1}dp_{A}dp_{B}\mathrm{max}\left[\left(p_{B}-p_{A}\right),\,0\right]\frac{p_{A}^{\alpha'_{A}-1}(1-p_{A})^{\beta'_{A}-1}}{\mathrm{B}(\alpha'_{A},\beta'_{A})}\frac{p_{B}^{\alpha'_{B}-1}(1-p_{B})^{\beta'_{B}-1}}{\mathrm{B}(\alpha'_{B},\beta'_{B})}\\
 &=\int_{0}^{1}\int_{p_{A}}^{1}dp_{A}dp_{B}\left(p_{B}-p_{A}\right)\frac{p_{A}^{\alpha'_{A}-1}(1-p_{A})^{\beta'_{A}-1}}{\mathrm{B}(\alpha'_{A},\beta'_{A})}\frac{p_{B}^{\alpha'_{B}-1}(1-p_{B})^{\beta'_{B}-1}}{\mathrm{B}(\alpha'_{B},\beta'_{B})}\\
 &=\frac{\mathrm{B}(\alpha'_{B}+1,\beta'_{B})}{\mathrm{B}(\alpha'_{B},\beta'_{B})}h(\alpha'_{A},\beta'_{A},\alpha'_{B}+1,\beta'_{B})-\frac{\mathrm{B}(\alpha'_{A}+1,\beta'_{A})}{\mathrm{B}(\alpha'_{A},\beta'_{A})}h(\alpha'_{A}+1,\beta'_{A},\alpha'_{B},\beta'_{B})\\
 &=\frac{\alpha'_{B}}{\alpha'_{B}+\beta'_{B}}h(\alpha'_{A},\beta'_{A},\alpha'_{B}+1,\beta'_{B})-\frac{\alpha'_{A}}{\alpha'_{A}+\beta'_{A}}h(\alpha'_{A}+1,\beta'_{A},\alpha'_{B},\beta'_{B})\end{align}
@@ -154,6 +171,8 @@ quickly falls to a small value relatively quickly, and drops closer to the
 true value of 0 as the experiment continues. When looking for, say, a
 1% gain from a new procedure, this metric would rightly indicate that such a
 gain was not likely.
+
+##On "peeking" and uncertainty in the gain
 
 It has been suggested that one can "peek" at the gain throughout the experiment
 to watch for it to go above some threshold value, but
@@ -182,19 +201,19 @@ in the observed expected gain in repeated experiments is too large
 and as a result reasonable decisions can't be made. How does one know when the result is "significant"?
 If the variance was known to be large and therefore the estimate of expected gain was inaccurate, then it would
 be obvious that more data was needed. Simulations can provide estimates of the
-variance, as above, but the variance in $p_{B}-p_{A}=\delta_{BA}$ can also be
+variance, as above, but the variance in $\mathrm{max}\left[p_B - p_A, 0\right]=\delta_{BA}$ can also be
 calculated directly
 
 \begin{equation}P\left[\left(\delta_{BA}-\bar{\delta}_{BA}\right)^{2}\right]=\int_{0}^{1}\int_{p_{A}}^{1}dp_{A}dp_{B}\left(p_{B}-p_{A}-\bar{\delta}_{BA}\right)^{2}\frac{p_{A}^{\alpha'_{A}-1}(1-p_{A})^{\beta'_{A}-1}}{\mathrm{B}(\alpha'_{A},\beta'_{A})}\frac{p_{B}^{\alpha'_{B}-1}(1-p_{B})^{\beta'_{B}-1}}{\mathrm{B}(\alpha'_{B},\beta'_{B})}\end{equation}
 
 The derivation proceeds very similarly to that of the expected gain
 
-\begin{align}P\left[\left(\delta_{BA}-\bar{\delta}_{BA}\right)^{2}\right]=&\frac{\alpha'_{B}\left(\alpha'_{B}+1\right)}{\left(\alpha'_{B}+\beta'_{B}\right)\left(\alpha'_{B}+\beta'_{B}+1\right)}h(\alpha'_{A},\beta'_{A},\alpha'_{B}+2,\beta'_{B})\ldots\\
-&+\frac{\alpha'_{A}\left(\alpha'_{A}+1\right)}{\left(\alpha'_{A}+\beta'_{A}\right)\left(\alpha'_{A}+\beta'_{A}+1\right)}h(\alpha'_{A}+2,\beta'_{A},\alpha'_{B},\beta'_{B})\ldots\\
-&+\bar{\delta}_{BA}^{2}h(\alpha'_{A},\beta'_{A},\alpha'_{B},\beta'_{B})-2\frac{\alpha'_{A}}{\alpha'_{A}+\beta'_{A}}\frac{\alpha'_{B}}{\alpha'_{B}+\beta'_{B}}h(\alpha'_{A}+1,\beta'_{A},\alpha'_{B}+1,\beta'_{B})\ldots\\
+\begin{align}P\left[\left(\delta_{BA}-\bar{\delta}_{BA}\right)^{2}\right]=&\frac{\alpha'_{B}\left(\alpha'_{B}+1\right)}{\left(\alpha'_{B}+\beta'_{B}\right)\left(\alpha'_{B}+\beta'_{B}+1\right)}h(\alpha'_{A},\beta'_{A},\alpha'_{B}+2,\beta'_{B})\ldots\notag\\
+&+\frac{\alpha'_{A}\left(\alpha'_{A}+1\right)}{\left(\alpha'_{A}+\beta'_{A}\right)\left(\alpha'_{A}+\beta'_{A}+1\right)}h(\alpha'_{A}+2,\beta'_{A},\alpha'_{B},\beta'_{B})\ldots\notag\\
+&+\bar{\delta}_{BA}^{2}h(\alpha'_{A},\beta'_{A},\alpha'_{B},\beta'_{B})-2\frac{\alpha'_{A}}{\alpha'_{A}+\beta'_{A}}\frac{\alpha'_{B}}{\alpha'_{B}+\beta'_{B}}h(\alpha'_{A}+1,\beta'_{A},\alpha'_{B}+1,\beta'_{B})\ldots\notag\\
 &+2\bar{\delta}_{BA}\frac{\alpha'_{A}}{\alpha'_{A}+\beta'_{A}}h(\alpha'_{A}+1,\beta'_{A},\alpha'_{B},\beta'_{B})-2\bar{\delta}_{BA}\frac{\alpha'_{B}}{\alpha'_{B}+\beta'_{B}}h(\alpha'_{A},\beta'_{A},\alpha'_{B}+1,\beta'_{B}).\end{align}
 
-The expected gain, together with it's variance given here, are ideally suited to
+The expected gain, together with it's variance given here, are well suited to
 evaluating the experimental outcome. As an experiment is run
 the expected gain and it's variance can be calculated. If the gain is found to be significant
 *relative to* the square root of the variance, then the experiment can safely be stopped.
@@ -214,17 +233,64 @@ comparison.
 
 ![Average gain together with uncertainty compared to variance observed in experiments with 1% gain.]({filename}/images/gain_w_uncert_1percent.png)
 
+##What's the difference?
+
+**Thanks to Niels Oppermann for motivating this section.**
+
+The expected gain and its variance have both been calculated under the condition that
+$p_B>p_A$. Instead, one could simply calculate the *expected difference*
+$p_B-p_A=\delta'_{BA}$ without specifying that the new procedure outperforms the standard procedure
+
+\begin{align}P\left(p_B-p_A\right)&=\int_{0}^{1}\int_{0}^{1}dp_{A}dp_{B}\left(p_{B}-p_{A}\right)\frac{p_{A}^{\alpha'_{A}-1}(1-p_{A})^{\beta'_{A}-1}}{\mathrm{B}(\alpha'_{A},\beta'_{A})}\frac{p_{B}^{\alpha'_{B}-1}(1-p_{B})^{\beta'_{B}-1}}{\mathrm{B}(\alpha'_{B},\beta'_{B})}\notag\\
+&=\frac{\mathrm{B}(\alpha'_{B}+1,\beta'_{B})}{\mathrm{B}(\alpha'_{B},\beta'_{B})}-\frac{\mathrm{B}(\alpha'_{A}+1,\beta'_{A})}{\mathrm{B}(\alpha'_{A},\beta'_{A})}\notag\\
+&=\frac{\alpha'_{B}}{\alpha'_{B}+\beta'_{B}}-\frac{\alpha'_{A}}{\alpha'_{A}+\beta'_{A}}\label{eq:exp_diff}\\
+&=\bar{\delta}'_{BA}\label{eq:exp_diff2}\end{align}
+
+This is just the difference between the posterior means for $p_B$ and $p_A$ as
+one might intuitively expect. What about the variance? The derivation is similar
+to the variance in the gain and the result is similar except a bit cleaner without the
+$h(\alpha_A, \beta_A, \alpha_B, \beta_B)$ terms.
+
+\begin{align}P\left[\left(\delta'_{BA}-\bar{\delta}'_{BA}\right)^{2}\right]=&\frac{\alpha'_{B}\left(\alpha'_{B}+1\right)}{\left(\alpha'_{B}+\beta'_{B}\right)\left(\alpha'_{B}+\beta'_{B}+1\right)}+\frac{\alpha'_{A}\left(\alpha'_{A}+1\right)}{\left(\alpha'_{A}+\beta'_{A}\right)\left(\alpha'_{A}+\beta'_{A}+1\right)}\ldots\notag\\
+&-2\frac{\alpha'_{A}}{\alpha'_{A}+\beta'_{A}}\frac{\alpha'_{B}}{\alpha'_{B}+\beta'_{B}}-\bar{\delta}_{BA}^{2}.\label{eq:var_diff}\end{align}
+
+The variance in the expected difference consists of the sum of two terms that are very nearly
+- but interestingly not quite - the posterior variances of $p_B$ and $p_A$ minus
+the square of the expected difference and a cross term.
+
+In the figure below I show a comparison of the expected difference and gain for
+a single simulated experiment including the "$1\sigma$" uncertainties (i.e. plus or minus the
+square root of the variance in each measure). In this case the true difference
+between $p_B$ and $p_A$ is 1%. After about 5000 trials, the two measures are
+essentially the same.
+
+![Comparison of expected gain and difference for a simulated example.]({filename}/images/gain_and_diff_1percent.png)
+
+When the gain or difference is larger, the two quantities converge even more quickly.
+But what about when the difference is negative? In this case, there is much more discrepancy
+between the gain and the difference because the gain is a strictly positive quantity
+while the difference can take both positive and negative values.
+
+![Comparison of expected gain and difference for a simulated example with negative difference.]({filename}/images/gain_and_diff_neg1percent.png)
+
+While I started by providing the gain and it's variance to build on the work of the blog posts
+of Miller and Stuccio, I will actually opt to use the expected difference and it's
+variance in my experiments.
+
+##Conclusions
+
 So finally I have everything that I'll need to run basic experiments in situations
-with binary outcomes. The expected gain together with it's variance are
-enough to indicate not only how much better one might do by switching to a new
-procedure, but also how much one should trust the result. Experimental results can be monitored regularly
-as long as both the gain and variance are evaluated at each step, and it's fine to
-stop the experiment if the gain is found to be good enough when compared to the
+with binary outcomes. The expected difference (eq.$\,\ref{eq:exp_diff3}$),
+together with it's variance (eq.$\,\ref{eq:var_diff}$), are enough to indicate not only how much better one
+might do by switching to a new procedure, but also how much one should trust the
+result. Experimental results can be monitored regularly as long as both the
+difference and variance are evaluated at each step, and it's fine to
+stop the experiment if the difference is found to be good enough when compared to the
 uncertainty.
 
 These results apply to two procedure (A/B) tests where outcomes are binary. Similar
 results can be obtained when testing 3 or more procedures in parallel or if
 the outcomes are not binary but e.g. counts or rates instead. For example,
 [Evan Miller](http://www.evanmiller.org/bayesian-ab-testing.html) calculates POI
-for count data and for three test groups. An expected gain and it's variance could
+for count data and for three test groups. An expected difference and it's variance could
 be calculated in these cases as well.
