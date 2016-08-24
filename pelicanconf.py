@@ -18,7 +18,7 @@ PATH = 'content'
 
 BOOTSTRAP_THEME = 'simplex'
 
-THEME = os.path.join(home, "Code/pelican-bootstrap3")
+THEME = os.path.join(home, "Code/pelican-themes/pelican-bootstrap3")
 
 TIMEZONE = 'America/New_York'
 
@@ -46,9 +46,9 @@ SOCIAL = (('Twitter', 'https://twitter.com/mryanbell'),
 
 DEFAULT_PAGINATION = 10
 
-STATIC_PATHS = ['CNAME', 'images']
+STATIC_PATHS = ['CNAME', 'images', 'pages']
 
-PLUGIN_PATHS = ['/Users/mike/Code/pelican-plugins']
+PLUGIN_PATHS = [os.path.join(home, "Code/pelican-plugins")]
 PLUGINS = ['render_math', 'summary']
 
 # Uncomment following line if you want document-relative URLs when developing
