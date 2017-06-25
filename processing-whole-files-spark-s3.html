@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"
->
+<html lang="en" prefix="og: http://ogp.me/ns# fb: https://www.facebook.com/2008/fbml">
 <head>
     <title>Processing whole files from S3 with Spark - Michael Bell</title>
     <!-- Using the latest rendering mode for IE -->
@@ -14,13 +13,13 @@
 
         <meta name="author" content="Michael Bell" />
         <meta name="keywords" content="spark,how-to" />
-        <meta name="description" content="I have recently started diving into Apache Spark for a project at work and ran into issues trying to process the contents of a collection of files in parallel, particularly when the files are stored on Amazon S3. In this post I describe my problem and how I got around ..." />
+        <meta name="description" content="I have recently started diving into Apache Spark for a project at work and ran into issues trying to process the contents of a collection of files in parallel, particularly when the files are stored on Amazon S3. In this post I describe my problem and how I got around …" />
 
         <meta property="og:site_name" content="Michael Bell" />
         <meta property="og:type" content="article"/>
         <meta property="og:title" content="Processing whole files from S3 with Spark"/>
         <meta property="og:url" content="http://michaelryanbell.com/processing-whole-files-spark-s3.html"/>
-        <meta property="og:description" content="I have recently started diving into Apache Spark for a project at work and ran into issues trying to process the contents of a collection of files in parallel, particularly when the files are stored on Amazon S3. In this post I describe my problem and how I got around ..."/>
+        <meta property="og:description" content="I have recently started diving into Apache Spark for a project at work and ran into issues trying to process the contents of a collection of files in parallel, particularly when the files are stored on Amazon S3. In this post I describe my problem and how I got around …"/>
         <meta property="article:published_time" content="2015-02-11" />
             <meta property="article:section" content="Blog" />
             <meta property="article:tag" content="spark" />
@@ -37,6 +36,11 @@
 
         <link href="http://michaelryanbell.com/feeds/all.atom.xml" type="application/atom+xml" rel="alternate"
               title="Michael Bell ATOM Feed"/>
+
+
+
+        <link href="http://michaelryanbell.com/feeds/blog.atom.xml" type="application/atom+xml" rel="alternate"
+              title="Michael Bell Blog ATOM Feed"/>
 
 </head>
 <body>
@@ -55,12 +59,14 @@ Michael Bell            </a>
         </div>
         <div class="collapse navbar-collapse navbar-ex1-collapse">
             <ul class="nav navbar-nav">
+                         <li><a href="http://michaelryanbell.com/pages/about.html">
+                             About
+                          </a></li>
                         <li class="active">
                             <a href="http://michaelryanbell.com/category/blog.html">Blog</a>
                         </li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-              <li><a href="http://michaelryanbell.com/archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
             </ul>
         </div>
         <!-- /.navbar-collapse -->
@@ -71,7 +77,6 @@ Michael Bell            </a>
 <div class="container">
     <div class="row">
         <div class="col-sm-9">
-
     <section id="content">
         <article>
             <header class="page-header">
@@ -94,6 +99,8 @@ Michael Bell            </a>
 
 
 
+
+
 <span class="label label-default">Tags</span>
 	<a href="http://michaelryanbell.com/tag/spark.html">spark</a>
         /
@@ -106,10 +113,10 @@ Michael Bell            </a>
 <p>Most examples I found for <code>pyspark</code> create RDDs using the <code>SparkContext.textFile()</code> method. This generates an RDD where each line of the file is an item in the collection. This is not what I want. Looking through the API docs I found the method <code>SparkContext.wholeTextFiles()</code> that appears to do exactly what I want. I can point this method to a directory and it will create an RDD where each item contains data from an entire file. Perfect! Well, it would be if it worked anyway.</p>
 <p>Here's the issue... our data files are stored on Amazon S3, and for whatever reason this method fails when reading data from S3 (using Spark v1.2.0). I'm using <a href="https://spark.apache.org/docs/1.2.1/api/python/pyspark.html"><code>pyspark</code></a> but I've read in forums that people are having the same issue with the Scala library, so it's not just a Python issue. Anyway, here's how I got around this problem.</p>
 <p>First, I create a listing of files in a root directory and store the listing in a text file in a scratch bucket on S3. Here is a code snippet (I'm using <a href="https://boto.readthedocs.org/en/latest/"><code>boto</code></a> to interact with S3):</p>
-<div class="highlight"><pre><span class="n">conn</span> <span class="o">=</span> <span class="n">boto</span><span class="o">.</span><span class="n">connect_s3</span><span class="p">()</span>
-<span class="c"># bucket is the name of the S3 bucket where your data resides</span>
+<div class="highlight"><pre><span></span><span class="n">conn</span> <span class="o">=</span> <span class="n">boto</span><span class="o">.</span><span class="n">connect_s3</span><span class="p">()</span>
+<span class="c1"># bucket is the name of the S3 bucket where your data resides</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">(</span><span class="n">bucket</span><span class="p">)</span>  
-<span class="c"># inkey_root is the S3 &#39;directory&#39; in which your files are located</span>
+<span class="c1"># inkey_root is the S3 &#39;directory&#39; in which your files are located</span>
 <span class="n">keys</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">inkey_root</span><span class="p">)</span>
 
 <span class="n">key_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span>
@@ -119,7 +126,7 @@ Michael Bell            </a>
 
 
 <p>Next I need a function that takes a file path, parses the data from the file into a string, and returns a tuple with the file name and contents (as a string). Here is just such a function:</p>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">fetch_data</span><span class="p">(</span><span class="n">s3key</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fetch_data</span><span class="p">(</span><span class="n">s3key</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch data with the given s3 key and pass along the contents as a string.</span>
 
@@ -135,14 +142,14 @@ Michael Bell            </a>
     <span class="n">data</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">get_contents_as_string</span><span class="p">()</span>
     <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="c"># I use basename() to get just the file name itself</span>
+    <span class="c1"># I use basename() to get just the file name itself</span>
     <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">s3key</span><span class="p">),</span> <span class="n">data</span>
 </pre></div>
 
 
 <p>Then I create an RDD using <code>parallelize</code> on the listing of files to process. The RDD items will be the paths (ok fine, <em>keys</em>) of the files that I want to process in S3.  Then I call the RDD's <code>map</code> method, using <code>fetch_data</code> to parse the files and pass their contents along as a new RDD with the file contents as items, just like I wanted from <code>wholeTextFiles</code> in the first place. Then you can go ahead and process the resulting data as necessary, e.g. by chaining a call to another <code>map</code>, <code>foreach</code> or whatever. Here's the code, with a chained call to <code>foreach</code> to process the data using a function <code>process_data</code>.</p>
-<div class="highlight"><pre><span class="n">sc</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">SparkContext</span><span class="p">(</span><span class="s">&#39;local&#39;</span><span class="p">,</span> <span class="s">&#39;Whatever&#39;</span><span class="p">)</span>
-<span class="c"># Create an RDD from the list of s3 key names to process stored in key_list</span>
+<div class="highlight"><pre><span></span><span class="n">sc</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">SparkContext</span><span class="p">(</span><span class="s1">&#39;local&#39;</span><span class="p">,</span> <span class="s1">&#39;Whatever&#39;</span><span class="p">)</span>
+<span class="c1"># Create an RDD from the list of s3 key names to process stored in key_list</span>
 <span class="n">file_list</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="p">(</span><span class="n">key_list</span><span class="p">)</span>
 <span class="n">file_list</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">fetch_data</span><span class="p">)</span><span class="o">.</span><span class="n">foreach</span><span class="p">(</span><span class="n">process_data</span><span class="p">)</span>
 </pre></div>
@@ -199,10 +206,8 @@ Michael Bell            </a>
 
 
 
-            <li class="list-group-item"><a href="http://michaelryanbell.com/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
-                <ul class="list-group " id="tags">
-                </ul>
-            </li>
+
+
     </ul>
 </section>
             </aside>
@@ -213,8 +218,8 @@ Michael Bell            </a>
    <div class="container">
       <hr>
       <div class="row">
-         <div class="col-xs-10">&copy; 2015 Michael Bell
-            &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+         <div class="col-xs-10">&copy; 2017 Michael Bell
+            &middot; Powered by <a href="https://github.com/getpelican/pelican-themes/tree/master/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
             <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
             <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
          <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>

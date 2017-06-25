@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"
->
+<html lang="en" prefix="og: http://ogp.me/ns# fb: https://www.facebook.com/2008/fbml">
 <head>
     <title>Closures in Python - Michael Bell</title>
     <!-- Using the latest rendering mode for IE -->
@@ -14,13 +13,13 @@
 
         <meta name="author" content="Michael Bell" />
         <meta name="keywords" content="python" />
-        <meta name="description" content="The concept of closures is something that I&#39;ve been familiar with for a while, but I haven&#39;t used in my own work until recently. I started thinking more about closures while reading A Software Engineer Learns HTML5, JavaScript and jQuery by Dane Cameron (an excellent book, btw). They ..." />
+        <meta name="description" content="The concept of closures is something that I&#39;ve been familiar with for a while, but I haven&#39;t used in my own work until recently. I started thinking more about closures while reading A Software Engineer Learns HTML5, JavaScript and jQuery by Dane Cameron (an excellent book, btw). They are introduced …" />
 
         <meta property="og:site_name" content="Michael Bell" />
         <meta property="og:type" content="article"/>
         <meta property="og:title" content="Closures in Python"/>
         <meta property="og:url" content="http://michaelryanbell.com/python_closures.html"/>
-        <meta property="og:description" content="The concept of closures is something that I&#39;ve been familiar with for a while, but I haven&#39;t used in my own work until recently. I started thinking more about closures while reading A Software Engineer Learns HTML5, JavaScript and jQuery by Dane Cameron (an excellent book, btw). They ..."/>
+        <meta property="og:description" content="The concept of closures is something that I&#39;ve been familiar with for a while, but I haven&#39;t used in my own work until recently. I started thinking more about closures while reading A Software Engineer Learns HTML5, JavaScript and jQuery by Dane Cameron (an excellent book, btw). They are introduced …"/>
         <meta property="article:published_time" content="2015-08-16" />
             <meta property="article:section" content="Blog" />
             <meta property="article:tag" content="python" />
@@ -36,6 +35,11 @@
 
         <link href="http://michaelryanbell.com/feeds/all.atom.xml" type="application/atom+xml" rel="alternate"
               title="Michael Bell ATOM Feed"/>
+
+
+
+        <link href="http://michaelryanbell.com/feeds/blog.atom.xml" type="application/atom+xml" rel="alternate"
+              title="Michael Bell Blog ATOM Feed"/>
 
 </head>
 <body>
@@ -54,12 +58,14 @@ Michael Bell            </a>
         </div>
         <div class="collapse navbar-collapse navbar-ex1-collapse">
             <ul class="nav navbar-nav">
+                         <li><a href="http://michaelryanbell.com/pages/about.html">
+                             About
+                          </a></li>
                         <li class="active">
                             <a href="http://michaelryanbell.com/category/blog.html">Blog</a>
                         </li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-              <li><a href="http://michaelryanbell.com/archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
             </ul>
         </div>
         <!-- /.navbar-collapse -->
@@ -70,7 +76,6 @@ Michael Bell            </a>
 <div class="container">
     <div class="row">
         <div class="col-sm-9">
-
     <section id="content">
         <article>
             <header class="page-header">
@@ -93,6 +98,8 @@ Michael Bell            </a>
 
 
 
+
+
 <span class="label label-default">Tags</span>
 	<a href="http://michaelryanbell.com/tag/python.html">python</a>
     
@@ -104,7 +111,7 @@ familiar with for a while, but I haven't used in my own work until recently. I s
 by Dane Cameron (an excellent book, btw). They are introduced in the book as a way to protect object members. 
 In JS, like in Python, members of an object are public. In the absence of a <em>private</em> keyword or the like, one can use 
 closures to protect state variables from tampering by external code. Here's an example:</p>
-<div class="highlight"><pre><span class="kd">function</span> <span class="nx">incrementer</span><span class="p">()</span> <span class="p">{</span>
+<div class="highlight"><pre><span></span><span class="kd">function</span> <span class="nx">incrementer</span><span class="p">()</span> <span class="p">{</span>
     <span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
     <span class="k">return</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span><span class="k">return</span> <span class="o">++</span><span class="nx">i</span><span class="p">;}</span>
 <span class="p">}</span>
@@ -125,7 +132,7 @@ it can't be accessed directly in any other way. </p>
 <p>I hadn't seen closures mentioned often in Python circles, at least not in scientific and data analysis contexts. But as I 
 learned about closures in JS I couldn't help but wonder how they operate in Python, my language of choice. So does this 
 same code pattern work in Python?</p>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">incrementer</span><span class="p">():</span>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">incrementer</span><span class="p">():</span>
     <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">def</span> <span class="nf">function</span><span class="p">():</span>
         <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -148,12 +155,12 @@ same code pattern work in Python?</p>
       <span class="mi">5</span>         <span class="k">return</span> <span class="n">i</span>
       <span class="mi">6</span>     <span class="k">return</span> <span class="n">function</span>
 
-<span class="ne">UnboundLocalError</span><span class="p">:</span> <span class="n">local</span> <span class="n">variable</span> <span class="s">&#39;i&#39;</span> <span class="n">referenced</span> <span class="n">before</span> <span class="n">assignment</span>
+<span class="ne">UnboundLocalError</span><span class="p">:</span> <span class="n">local</span> <span class="n">variable</span> <span class="s1">&#39;i&#39;</span> <span class="n">referenced</span> <span class="n">before</span> <span class="n">assignment</span>
 </pre></div>
 
 
 <p>Nope. We get an <code>UnboundLocalError</code>. What if we just refer to <code>i</code> rather than try to increment it's value?</p>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">incrementer</span><span class="p">():</span>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">incrementer</span><span class="p">():</span>
     <span class="n">i</span> <span class="o">=</span> <span class="mi">120</span>
     <span class="k">def</span> <span class="nf">function</span><span class="p">():</span>
         <span class="k">return</span> <span class="n">i</span>
@@ -172,7 +179,7 @@ happened here? In Python, you can access a variable from a parent scope, but you
 done within the local scope, even if a variable with the same name is declared in a parent 
 scope. The parent variable is not overridden, but instead a new variable is created in the nested scope. 
 Take the following code for example:</p>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">incrementer</span><span class="p">():</span>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">incrementer</span><span class="p">():</span>
     <span class="n">i</span> <span class="o">=</span> <span class="mi">120</span>
     <span class="k">def</span> <span class="nf">function</span><span class="p">():</span>
         <span class="n">i</span> <span class="o">=</span> <span class="mi">10</span>
@@ -189,27 +196,27 @@ Take the following code for example:</p>
 <p>Although we can't overwrite a variable in a parent scope, we can modify its contents <em>if the object is a 
 mutable type</em> like a list or an object. So to replicate the JS style closure in Python, one could close over a
 mutable object, e.g.</p>
-<div class="highlight"><pre><span class="nx">def</span> <span class="nx">get_incrementer</span><span class="p">()</span><span class="o">:</span>
-    <span class="nx">i</span> <span class="o">=</span> <span class="cp">[</span><span class="mi">0</span><span class="cp">]</span>
-    <span class="nx">def</span> <span class="kd">function</span><span class="p">()</span><span class="o">:</span>
-        <span class="nx">i</span><span class="cp">[</span><span class="mi">0</span><span class="cp">]</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="nx">i</span><span class="cp">[</span><span class="mi">0</span><span class="cp">]</span>
-    <span class="k">return</span> <span class="kd">function</span>
+<div class="highlight"><pre><span></span>def get_incrementer():
+    i = [0]
+    def function():
+        i[0] += 1
+        return i[0]
+    return function
 
-<span class="o">&gt;&gt;</span> <span class="nx">f</span> <span class="o">=</span> <span class="nx">get_incrementer</span><span class="p">()</span>
-<span class="o">&gt;&gt;</span> <span class="nx">f</span><span class="p">()</span>
-<span class="mi">1</span>
-<span class="o">&gt;&gt;</span> <span class="nx">f</span><span class="p">()</span>
-<span class="mi">2</span>
-<span class="o">&gt;&gt;</span> <span class="nx">f</span><span class="p">()</span>
-<span class="mi">3</span>
+&gt;&gt; f = get_incrementer()
+&gt;&gt; f()
+1
+&gt;&gt; f()
+2
+&gt;&gt; f()
+3
 </pre></div>
 
 
 <p>Let's say that instead of using the pattern given above, we defined <code>incrementer</code> to be a method of a class and used it 
 to increment a normal class attribute.</p>
-<div class="highlight"><pre><span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">def</span> <span class="nf">incrementer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -241,17 +248,17 @@ application code. This is called <a href="https://en.wikipedia.org/wiki/Separati
 central to a programming paradigm known as <a href="https://en.wikipedia.org/wiki/Aspect-oriented_programming"><em>aspect oriented programming</em></a>. </p>
 <p>Let's write a logging decorator that logs the name of the function call, the arguments passed to the function, and 
 the return value.</p>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">log_me</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">log_me</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">function_wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">print</span> <span class="s">&#39;Calling function {:}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">func_name</span><span class="p">)</span>
-        <span class="n">args_list</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">])</span>
-        <span class="k">print</span> <span class="s">&#39;Positional arguments: {:}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">args_list</span><span class="p">)</span>
-        <span class="k">print</span> <span class="s">&#39;Keyword arguments: {:}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s1">&#39;Calling function {:}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">func_name</span><span class="p">)</span>
+        <span class="n">args_list</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">])</span>
+        <span class="k">print</span> <span class="s1">&#39;Positional arguments: {:}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">args_list</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s1">&#39;Keyword arguments: {:}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="c"># Call the original function</span>
+        <span class="c1"># Call the original function</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="k">print</span> <span class="s">&#39;Return: {:}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s1">&#39;Return: {:}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">function_wrapper</span>
 </pre></div>
 
@@ -264,7 +271,7 @@ logs the result. </p>
 use the <a href="https://docs.python.org/2/library/logging.html">logging module</a> or something similar.</p>
 <p>To <em>use</em> <code>log_me</code> we can use the Python decorator syntax (which you're familiar with if you've used e.g. <a href="http://flask.pocoo.org/">flask</a> 
 or many other popular Python packages that use decorators):</p>
-<div class="highlight"><pre>@log_me
+<div class="highlight"><pre><span></span>@log_me
 def adder(a, b, **kwargs):
     return a + b
 
@@ -275,24 +282,24 @@ def multiplier(a, b, **kwargs):
 
 
 <p>Here I've defined two simple functions and decorated them with <code>log_me</code>. Equivalently I could have just done:</p>
-<div class="highlight"><pre>def multiplier(a, b, **kwargs):
+<div class="highlight"><pre><span></span>def multiplier(a, b, **kwargs):
     return a * b
 multiplier = log_me(multiplier)
 </pre></div>
 
 
 <p>Anyway, the result is that when I call either of these two functions, their inputs and outputs get logged.</p>
-<div class="highlight"><pre><span class="o">&gt;&gt;</span> <span class="nx">adder</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="nx">another</span><span class="o">=</span><span class="s1">&#39;argument&#39;</span><span class="p">)</span>
-<span class="nx">Calling</span> <span class="kd">function</span> <span class="nx">adder</span>
-<span class="nx">Positional</span> <span class="nx">arguments</span><span class="o">:</span> <span class="mi">1</span> <span class="mi">2</span>
-<span class="nx">Keyword</span> <span class="nx">arguments</span><span class="o">:</span> <span class="p">{</span><span class="s1">&#39;another&#39;</span><span class="o">:</span> <span class="s1">&#39;argument&#39;</span><span class="p">}</span>
-<span class="nx">Return</span><span class="o">:</span> <span class="mi">3</span>
+<div class="highlight"><pre><span></span>&gt;&gt; adder(1,2, another=&#39;argument&#39;)
+Calling function adder
+Positional arguments: 1 2
+Keyword arguments: {&#39;another&#39;: &#39;argument&#39;}
+Return: 3
 
-<span class="o">&gt;&gt;</span> <span class="nx">multiplier</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="nx">another</span><span class="o">=</span><span class="s1">&#39;argument&#39;</span><span class="p">)</span>
-<span class="nx">Calling</span> <span class="kd">function</span> <span class="nx">multiplier</span>
-<span class="nx">Positional</span> <span class="nx">arguments</span><span class="o">:</span> <span class="mi">1</span> <span class="mi">2</span>
-<span class="nx">Keyword</span> <span class="nx">arguments</span><span class="o">:</span> <span class="p">{</span><span class="s1">&#39;another&#39;</span><span class="o">:</span> <span class="s1">&#39;argument&#39;</span><span class="p">}</span>
-<span class="nx">Return</span><span class="o">:</span> <span class="mi">12</span>
+&gt;&gt; multiplier(3, 4, another=&#39;argument&#39;)
+Calling function multiplier
+Positional arguments: 1 2
+Keyword arguments: {&#39;another&#39;: &#39;argument&#39;}
+Return: 12
 </pre></div>
 
 
@@ -349,10 +356,8 @@ all of this is made possible by closures.</p>
 
 
 
-            <li class="list-group-item"><a href="http://michaelryanbell.com/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
-                <ul class="list-group " id="tags">
-                </ul>
-            </li>
+
+
     </ul>
 </section>
             </aside>
@@ -363,8 +368,8 @@ all of this is made possible by closures.</p>
    <div class="container">
       <hr>
       <div class="row">
-         <div class="col-xs-10">&copy; 2015 Michael Bell
-            &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+         <div class="col-xs-10">&copy; 2017 Michael Bell
+            &middot; Powered by <a href="https://github.com/getpelican/pelican-themes/tree/master/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
             <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
             <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
          <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>

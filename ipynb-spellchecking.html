@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"
->
+<html lang="en" prefix="og: http://ogp.me/ns# fb: https://www.facebook.com/2008/fbml">
 <head>
     <title>Spell checking an IPython notebook - Michael Bell</title>
     <!-- Using the latest rendering mode for IE -->
@@ -13,17 +12,17 @@
 <link rel="canonical" href="http://michaelryanbell.com/ipynb-spellchecking.html">
 
         <meta name="author" content="Michael Bell" />
-        <meta name="keywords" content="ipython,how-to" />
-        <meta name="description" content="I&#39;ve been using IPython notebooks a lot lately for both my personal and professional research and analysis projects. It&#39;s a great tool for keeping code, visualization and analysis together in one place. It&#39;s also convenient for communicating results. Just export your notebook to HTML and it&#39;s ..." />
+        <meta name="keywords" content="python,how-to" />
+        <meta name="description" content="I&#39;ve been using IPython notebooks a lot lately for both my personal and professional research and analysis projects. It&#39;s a great tool for keeping code, visualization and analysis together in one place. It&#39;s also convenient for communicating results. Just export your notebook to HTML and it&#39;s ready to distribute... except …" />
 
         <meta property="og:site_name" content="Michael Bell" />
         <meta property="og:type" content="article"/>
         <meta property="og:title" content="Spell checking an IPython notebook"/>
         <meta property="og:url" content="http://michaelryanbell.com/ipynb-spellchecking.html"/>
-        <meta property="og:description" content="I&#39;ve been using IPython notebooks a lot lately for both my personal and professional research and analysis projects. It&#39;s a great tool for keeping code, visualization and analysis together in one place. It&#39;s also convenient for communicating results. Just export your notebook to HTML and it&#39;s ..."/>
+        <meta property="og:description" content="I&#39;ve been using IPython notebooks a lot lately for both my personal and professional research and analysis projects. It&#39;s a great tool for keeping code, visualization and analysis together in one place. It&#39;s also convenient for communicating results. Just export your notebook to HTML and it&#39;s ready to distribute... except …"/>
         <meta property="article:published_time" content="2015-02-01" />
             <meta property="article:section" content="Blog" />
-            <meta property="article:tag" content="ipython" />
+            <meta property="article:tag" content="python" />
             <meta property="article:tag" content="how-to" />
             <meta property="article:author" content="Michael Bell" />
 
@@ -37,6 +36,11 @@
 
         <link href="http://michaelryanbell.com/feeds/all.atom.xml" type="application/atom+xml" rel="alternate"
               title="Michael Bell ATOM Feed"/>
+
+
+
+        <link href="http://michaelryanbell.com/feeds/blog.atom.xml" type="application/atom+xml" rel="alternate"
+              title="Michael Bell Blog ATOM Feed"/>
 
 </head>
 <body>
@@ -55,12 +59,14 @@ Michael Bell            </a>
         </div>
         <div class="collapse navbar-collapse navbar-ex1-collapse">
             <ul class="nav navbar-nav">
+                         <li><a href="http://michaelryanbell.com/pages/about.html">
+                             About
+                          </a></li>
                         <li class="active">
                             <a href="http://michaelryanbell.com/category/blog.html">Blog</a>
                         </li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-              <li><a href="http://michaelryanbell.com/archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
             </ul>
         </div>
         <!-- /.navbar-collapse -->
@@ -71,7 +77,6 @@ Michael Bell            </a>
 <div class="container">
     <div class="row">
         <div class="col-sm-9">
-
     <section id="content">
         <article>
             <header class="page-header">
@@ -94,44 +99,46 @@ Michael Bell            </a>
 
 
 
+
+
 <span class="label label-default">Tags</span>
-	<a href="http://michaelryanbell.com/tag/ipython.html">ipython</a>
+	<a href="http://michaelryanbell.com/tag/python.html">python</a>
         /
 	<a href="http://michaelryanbell.com/tag/how-to.html">how-to</a>
     
 </footer><!-- /.post-info -->                    </div>
                 </div>
-                <p>I've been using <a href="http://ipython.org/notebook.html">IPython notebooks</a> a lot lately for both my personal and professional 
-research and analysis projects. It's a great tool for keeping code, visualization and analysis together in one place. 
-It's also convenient for communicating results. Just export your notebook to HTML and it's ready to distribute... except 
-for the fact that without a spell checker I tend to have a lot of typos in my markdown cells. </p>
-<p>I found a work-around that enables spell checking in the markdown cells of my notebooks from GitHub user 
-<a href="https://github.com/dsblank">dsblank</a> in the comments of the IPython project issue 
-<a href="https://github.com/ipython/ipython/issues/3216">here</a>. It is a bit hack-y and tedious but it works. </p>
+                <p>I've been using <a href="http://ipython.org/notebook.html">IPython notebooks</a> a lot lately for both my personal and professional
+research and analysis projects. It's a great tool for keeping code, visualization and analysis together in one place.
+It's also convenient for communicating results. Just export your notebook to HTML and it's ready to distribute... except
+for the fact that without a spell checker I tend to have a lot of typos in my markdown cells.</p>
+<p>I found a work-around that enables spell checking in the markdown cells of my notebooks from GitHub user
+<a href="https://github.com/dsblank">dsblank</a> in the comments of the IPython project issue
+<a href="https://github.com/ipython/ipython/issues/3216">here</a>. It is a bit hack-y and tedious but it works.</p>
 <p>To enable spell checking, do the following:</p>
 <ol>
 <li>
 <p>Install a custom extension with the following command</p>
-<div class="highlight"><pre>ipython install-nbextension https://bitbucket.org/ipre/calico/downloads/calico-spell-check-1.0.zip
+<div class="highlight"><pre><span></span>ipython install-nbextension https://bitbucket.org/ipre/calico/downloads/calico-spell-check-1.0.zip
 </pre></div>
 
 
 </li>
 <li>
 <p>Execute the following code in a cell of your notebook</p>
-<div class="highlight"><pre><span class="c">%%javascript</span>
+<div class="highlight"><pre><span></span><span class="c">%%javascript</span>
 <span class="n">IPython</span><span class="p">.</span><span class="n">load_extensions</span><span class="p">(</span><span class="s">&#39;calico-spell-check&#39;</span><span class="p">)</span>
 </pre></div>
 
 
 </li>
 </ol>
-<p>You should now see a new button in the tool bar that, when checked, enables spell checking within your markdown cells. </p>
-<p>This functionality will only last for the current session of the current notebook. You'll have to repeat step 2 for each 
-notebook and for every session. <strong>And be sure to delete or comment the code from step 2 once you've executed it.</strong> I've 
-found that it causes problems (unexecutable markdown cells) if you happen to execute that block of code twice in one 
+<p>You should now see a new button in the tool bar that, when checked, enables spell checking within your markdown cells.</p>
+<p>This functionality will only last for the current session of the current notebook. You'll have to repeat step 2 for each
+notebook and for every session. <strong>And be sure to delete or comment the code from step 2 once you've executed it.</strong> I've
+found that it causes problems (unexecutable markdown cells) if you happen to execute that block of code twice in one
 session.</p>
-<p>Apart from the tedium of this solution, I've found that it works rather well. Hopefully this functionality will make it 
+<p>Apart from the tedium of this solution, I've found that it works rather well. Hopefully this functionality will make it
 into future release of the IPython notebook.</p>
             </div>
             <!-- /.entry-content -->
@@ -183,10 +190,8 @@ into future release of the IPython notebook.</p>
 
 
 
-            <li class="list-group-item"><a href="http://michaelryanbell.com/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
-                <ul class="list-group " id="tags">
-                </ul>
-            </li>
+
+
     </ul>
 </section>
             </aside>
@@ -197,8 +202,8 @@ into future release of the IPython notebook.</p>
    <div class="container">
       <hr>
       <div class="row">
-         <div class="col-xs-10">&copy; 2015 Michael Bell
-            &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+         <div class="col-xs-10">&copy; 2017 Michael Bell
+            &middot; Powered by <a href="https://github.com/getpelican/pelican-themes/tree/master/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
             <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
             <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
          <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>

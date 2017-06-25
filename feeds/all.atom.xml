@@ -1,5 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Michael Bell</title><link href="http://michaelryanbell.com/" rel="alternate"></link><link href="http://michaelryanbell.com/feeds/all.atom.xml" rel="self"></link><id>http://michaelryanbell.com/</id><updated>2015-12-30T00:00:00-05:00</updated><entry><title>Bayesian A/B testing with confidence</title><link href="http://michaelryanbell.com/bayesian_ab_testing.html" rel="alternate"></link><updated>2015-12-30T00:00:00-05:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2015-12-27:bayesian_ab_testing.html</id><summary type="html">&lt;p&gt;&lt;strong&gt;UPDATE (12/30/2015)&lt;/strong&gt;: In response to a comment by Niels Oppermann, I have added
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Michael Bell</title><link href="http://michaelryanbell.com/" rel="alternate"></link><link href="http://michaelryanbell.com/feeds/all.atom.xml" rel="self"></link><id>http://michaelryanbell.com/</id><updated>2017-06-25T00:00:00-04:00</updated><entry><title>I'm afraid to write on the internet</title><link href="http://michaelryanbell.com/fear-of-blogging.html" rel="alternate"></link><published>2017-06-25T00:00:00-04:00</published><updated>2017-06-25T00:00:00-04:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2017-06-25:/fear-of-blogging.html</id><summary type="html">
+
+&lt;p&gt;I don't post on this site much and that bothers me. I want to write more, often have ideas for things to write about, and may even jot down some notes and thoughts, but rarely get around to posting things. Why? To be honest, I don't post here mostly because I'm kind of afraid to.&lt;/p&gt;
+</summary><content type="html">
+
+&lt;p&gt;I don't post on this site much and that bothers me. I want to write more, often have ideas for things to write about, and may even jot down some notes and thoughts, but rarely get around to posting things. Why? To be honest, I don't post here mostly because I'm kind of afraid to.&lt;/p&gt;
+
+
+&lt;p&gt;I worry I don't have anything interesting or unique to say. That's probably true, but as I think about it, who cares? I don't write professionally, to gain a following, entertain, or impress people. I write because it helps me think. I don't have to blog to write of course, but publishing my writing forces me to spend a little more time thinking things through to the end and organizing my thoughts. As a side benefit, if people find something I write interesting or helpful, that's awesome. But if not, that shouldn't stop me. The exercise is useful in and of itself.&lt;/p&gt;
+&lt;p&gt;I also worry that I might say something that's wrong or offend someone. This concern actually governs all of my online activities, or lack thereof. I can be pretty insecure about being wrong, or exposing myself to criticism in general. I worry that if I make a mistake or admit I don't know something then people will think less of me. The fact is that I will be wrong on occasion, and because this is the internet, someone will probably think I'm an idiot because of it. But I know better than to be concerned about that. Everyone makes mistakes, and reasonable people understand that. No one knows everything, and I think reasonable people understand that, too. After all, people that know me seem to think I'm reasonably competent despite the fact that I screw up or say dumb things pretty regularly. Why do I care what unreasonable people think? I should get over it.&lt;/p&gt;
+&lt;p&gt;Another concern (that is probably an excuse to avoid confronting the fears discussed above) is that I need to pick a topic and stick with it. My "audience" will be confused or turned off if I'm posting about stats one day and video games the next. I don't have an audience though, and again that's not why I want to do this in the first place. I think about and am interested in a lot of different things. If I restrict myself to writing about one thing, I'm never going to do it. Which brings us to where we are today.&lt;/p&gt;
+&lt;p&gt;These are a few of the fears and excuses that keep me from blogging, and engaging online in general. I'm going to work on getting over them. I'm not going to commit to writing with any frequency or anything, but I'll stop worrying so much about the topic, making mistakes, being ultra thorough, etc. If I'm open to just writing about what's on my mind without worrying so much, I'm sure I'll find many more opportunities to post than I do now. Let's see.&lt;/p&gt;</content><category term="writing"></category><category term="thoughts"></category></entry><entry><title>Bayesian A/B testing with confidence</title><link href="http://michaelryanbell.com/bayesian_ab_testing.html" rel="alternate"></link><published>2015-12-27T00:00:00-05:00</published><updated>2015-12-30T00:00:00-05:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2015-12-27:/bayesian_ab_testing.html</id><summary type="html">
+
+&lt;p&gt;I have been developing the A/B testing procedure that I want to use in
+an upcoming experiment at work. Generally speaking I'm on team Bayes when it comes
+to statistical matters, and that's the approach that I will take in this case as well. In
+this (long) post I'll outline a method for Bayesian A/B testing that is largely built on some
+excellent blog posts by &lt;a href="http://www.evanmiller.org/bayesian-ab-testing.html"&gt;Evan Miller&lt;/a&gt;,
+&lt;a href="https://www.chrisstucchio.com/blog/2014/bayesian_ab_decision_rule.html"&gt;Chris Stuccio&lt;/a&gt;,
+and &lt;a href="http://varianceexplained.org/r/bayesian-ab-testing/"&gt;David Robinson&lt;/a&gt;.
+In this post I'll summarize the results of Miller and Stuccio, ending up with a
+decision function for A/B testing based on the gain expected from making the
+change that is under consideration. I go a bit further than the referenced posts
+by deriving a measure of uncertainty in the expected gain that can be used to
+determine when a result is significant and overcome the "peeking" problem discussed
+in Robinson's post. Lastly I calculate the expected difference between the two
+procedures under test (as opposed to the gain which is the difference but
+only when the new procedure is better).
+Throughout I present some simulated examples to give a sense of the impact of the
+different parameters in the model and to illustrate some aspects of the model
+that one should be aware of.&lt;/p&gt;
+</summary><content type="html">&lt;p&gt;&lt;strong&gt;UPDATE (12/30/2015)&lt;/strong&gt;: In response to a comment by Niels Oppermann, I have added
 derivations of the expected difference &lt;span class="math"&gt;\(p_B-p_A\)&lt;/span&gt; in addition to the
 expected gain &lt;span class="math"&gt;\(\mathrm{max}\left(p_B-p_A, 0\right)\)&lt;/span&gt; (i.e. the difference when
 &lt;span class="math"&gt;\(p_B&amp;gt;p_A\)&lt;/span&gt;).&lt;/p&gt;
@@ -66,7 +97,7 @@ between 0.4 and 0.6 with a mean of 0.5. The posterior mean approaches
 the ratio &lt;span class="math"&gt;\(k/n\)&lt;/span&gt; in each case, but there is still some influence of the prior
 given the limited amount of data. With more and more data, the posterior
 distribution will become centered on the ratio &lt;span class="math"&gt;\(k/n\)&lt;/span&gt; and increasingly more narrow.&lt;/p&gt;
-&lt;p&gt;&lt;img alt="Example Posterior Inference" src="http://michaelryanbell.com/images/example_posterior_inference.png" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Example Posterior Inference" src="http://michaelryanbell.com/images/example_posterior_inference.png"&gt;&lt;/p&gt;
 &lt;h2&gt;The probability that the new procedure is better&lt;/h2&gt;
 &lt;p&gt;Given the experimental data and the posterior distributions for p, how does one know
 that the new procedure is better than the old one i.e. that &lt;span class="math"&gt;\(p_{B}&amp;gt;p_{A}\)&lt;/span&gt;? If you
@@ -96,7 +127,7 @@ Actually, in case the two procedures are indeed the same then the POI turns out 
 In this case the true values of &lt;span class="math"&gt;\(p_A\)&lt;/span&gt; and &lt;span class="math"&gt;\(p_B\)&lt;/span&gt; are both 0.5.
 I show the average value from all 100 simulations at each value of &lt;span class="math"&gt;\(n\)&lt;/span&gt; together with the
 intervals covering 65% and 95% of all observed values.&lt;/p&gt;
-&lt;p&gt;&lt;img alt="POI with equal probabilities for each group" src="http://michaelryanbell.com/images/poi_equal_probabilities.png" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="POI with equal probabilities for each group" src="http://michaelryanbell.com/images/poi_equal_probabilities.png"&gt;&lt;/p&gt;
 &lt;p&gt;The simulations show that nearly any POI can be observed
 when the two procedures truly have the same effect. Judging solely on POI,
 there is a decent chance that one could observe &lt;span class="math"&gt;\(p_B\)&lt;/span&gt; to be greater than &lt;span class="math"&gt;\(p_A\)&lt;/span&gt;
@@ -126,7 +157,7 @@ it also provides an estimate of how much better it is.&lt;/p&gt;
 &lt;p&gt;What happens to the expected gain when the true values of &lt;span class="math"&gt;\(p_B\)&lt;/span&gt; and &lt;span class="math"&gt;\(p_A\)&lt;/span&gt; are equal?
 The POI wasn't always reliable in this situation. Is the gain a better metric?
 I'll turn again to simulated experimental results to find out.&lt;/p&gt;
-&lt;p&gt;&lt;img alt="Expected gain with equal probabilities for each group" src="http://michaelryanbell.com/images/gain_equal_probabilities.png" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Expected gain with equal probabilities for each group" src="http://michaelryanbell.com/images/gain_equal_probabilities.png"&gt;&lt;/p&gt;
 &lt;p&gt;It's clear that the gain behaves much better than the POI did above. The gain
 quickly falls to a small value relatively quickly, and drops closer to the
 true value of 0 as the experiment continues. When looking for, say, a
@@ -143,7 +174,7 @@ peeking at a &lt;em&gt;p&lt;/em&gt;-value).&lt;/p&gt;
 and are interested in implementing a new procedure (applied to group B) if we find a 1% gain
 in &lt;span class="math"&gt;\(p_B\)&lt;/span&gt; over &lt;span class="math"&gt;\(p_A\)&lt;/span&gt;. But let's imagine that &lt;span class="math"&gt;\(p_B\)&lt;/span&gt; is actually 1% &lt;em&gt;lower&lt;/em&gt; than
 &lt;span class="math"&gt;\(p_A\)&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;img alt="Gain as a function of experiment length when B is worse than A." src="http://michaelryanbell.com/images/gain_B_is_worse.png" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Gain as a function of experiment length when B is worse than A." src="http://michaelryanbell.com/images/gain_B_is_worse.png"&gt;&lt;/p&gt;
 &lt;p&gt;The figure above shows the expected gain from 100 simulated experiments where again
 I "peek" at the gain every 1000 trials. Until about 5000 trials
 there is a good chance that a 1% gain in B over A can be observed, and if I saw that
@@ -168,7 +199,7 @@ calculated directly&lt;/p&gt;
 evaluating the experimental outcome. As an experiment is run
 the expected gain and it's variance can be calculated. If the gain is found to be significant
 &lt;em&gt;relative to&lt;/em&gt; the square root of the variance, then the experiment can safely be stopped.&lt;/p&gt;
-&lt;p&gt;&lt;img alt="Average gain together with uncertainty compared to variance observed in experiments with 5% gain." src="http://michaelryanbell.com/images/gain_w_uncert.png" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Average gain together with uncertainty compared to variance observed in experiments with 5% gain." src="http://michaelryanbell.com/images/gain_w_uncert.png"&gt;&lt;/p&gt;
 &lt;p&gt;In the figure above, I show the results of another set of 100 simulations. In this
 case the true value of &lt;span class="math"&gt;\(p_B\)&lt;/span&gt; is 5% higher than &lt;span class="math"&gt;\(p_A\)&lt;/span&gt;. The average
 of all observed gains converges on the correct difference pretty quickly. I also
@@ -179,7 +210,7 @@ using the equation above. The closed form "1-&lt;span class="math"&gt;\(\sigma\)
 calculation matches the spread of simulated results very closely. The figure
 below is similar, but for a true &lt;span class="math"&gt;\(p_B\)&lt;/span&gt; that is only 1% higher than &lt;span class="math"&gt;\(p_A\)&lt;/span&gt; for
 comparison.&lt;/p&gt;
-&lt;p&gt;&lt;img alt="Average gain together with uncertainty compared to variance observed in experiments with 1% gain." src="http://michaelryanbell.com/images/gain_w_uncert_1percent.png" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Average gain together with uncertainty compared to variance observed in experiments with 1% gain." src="http://michaelryanbell.com/images/gain_w_uncert_1percent.png"&gt;&lt;/p&gt;
 &lt;h2&gt;What's the difference?&lt;/h2&gt;
 &lt;p&gt;&lt;strong&gt;Thanks to Niels Oppermann for motivating this section.&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;The expected gain and its variance have both been calculated under the condition that
@@ -203,12 +234,12 @@ a single simulated experiment including the "&lt;span class="math"&gt;\(1\sigma\
 square root of the variance in each measure). In this case the true difference
 between &lt;span class="math"&gt;\(p_B\)&lt;/span&gt; and &lt;span class="math"&gt;\(p_A\)&lt;/span&gt; is 1%. After about 5000 trials, the two measures are
 essentially the same.&lt;/p&gt;
-&lt;p&gt;&lt;img alt="Comparison of expected gain and difference for a simulated example." src="http://michaelryanbell.com/images/gain_and_diff_1percent.png" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Comparison of expected gain and difference for a simulated example." src="http://michaelryanbell.com/images/gain_and_diff_1percent.png"&gt;&lt;/p&gt;
 &lt;p&gt;When the gain or difference is larger, the two quantities converge even more quickly.
 But what about when the difference is negative? In this case, there is much more discrepancy
 between the gain and the difference because the gain is a strictly positive quantity
 while the difference can take both positive and negative values.&lt;/p&gt;
-&lt;p&gt;&lt;img alt="Comparison of expected gain and difference for a simulated example with negative difference." src="http://michaelryanbell.com/images/gain_and_diff_neg1percent.png" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Comparison of expected gain and difference for a simulated example with negative difference." src="http://michaelryanbell.com/images/gain_and_diff_neg1percent.png"&gt;&lt;/p&gt;
 &lt;p&gt;While I started by providing the gain and it's variance to build on the work of the blog posts
 of Miller and Stuccio, I will actually opt to use the expected difference and it's
 variance in my experiments.&lt;/p&gt;
@@ -239,11 +270,9 @@ be calculated in these cases as well.&lt;/p&gt;
     }
 
     var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' &amp;&amp; location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -283,13 +312,16 @@ be calculated in these cases as well.&lt;/p&gt;
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="statistics"></category><category term="data"></category></entry><entry><title>Closures in Python</title><link href="http://michaelryanbell.com/python_closures.html" rel="alternate"></link><updated>2015-08-16T00:00:00-04:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2015-08-16:python_closures.html</id><summary type="html">&lt;p&gt;The concept of &lt;a href="https://en.wikipedia.org/wiki/Closure_(computer_programming)"&gt;&lt;em&gt;closures&lt;/em&gt;&lt;/a&gt; is something that I've been 
+&lt;/script&gt;</content><category term="statistics"></category><category term="data"></category></entry><entry><title>Closures in Python</title><link href="http://michaelryanbell.com/python_closures.html" rel="alternate"></link><published>2015-08-16T00:00:00-04:00</published><updated>2015-08-16T00:00:00-04:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2015-08-16:/python_closures.html</id><summary type="html">&lt;p&gt;The concept of &lt;a href="https://en.wikipedia.org/wiki/Closure_(computer_programming)"&gt;&lt;em&gt;closures&lt;/em&gt;&lt;/a&gt; is something that I've been 
+familiar with for a while, but I haven't used in my own work until recently. I started thinking more about closures while reading 
+&lt;a href="http://www.amazon.com/Software-Engineer-Learns-JavaScript-jQuery-ebook/dp/B00GAMTRI8"&gt;A Software Engineer Learns HTML5, JavaScript and jQuery&lt;/a&gt; 
+by Dane Cameron (an excellent book, btw). They are introduced …&lt;/p&gt;</summary><content type="html">&lt;p&gt;The concept of &lt;a href="https://en.wikipedia.org/wiki/Closure_(computer_programming)"&gt;&lt;em&gt;closures&lt;/em&gt;&lt;/a&gt; is something that I've been 
 familiar with for a while, but I haven't used in my own work until recently. I started thinking more about closures while reading 
 &lt;a href="http://www.amazon.com/Software-Engineer-Learns-JavaScript-jQuery-ebook/dp/B00GAMTRI8"&gt;A Software Engineer Learns HTML5, JavaScript and jQuery&lt;/a&gt; 
 by Dane Cameron (an excellent book, btw). They are introduced in the book as a way to protect object members. 
 In JS, like in Python, members of an object are public. In the absence of a &lt;em&gt;private&lt;/em&gt; keyword or the like, one can use 
 closures to protect state variables from tampering by external code. Here's an example:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
     &lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
     &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="p"&gt;;}&lt;/span&gt;
 &lt;span class="p"&gt;}&lt;/span&gt;
@@ -310,7 +342,7 @@ it can't be accessed directly in any other way. &lt;/p&gt;
 &lt;p&gt;I hadn't seen closures mentioned often in Python circles, at least not in scientific and data analysis contexts. But as I 
 learned about closures in JS I couldn't help but wonder how they operate in Python, my language of choice. So does this 
 same code pattern work in Python?&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
     &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
     &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;function&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
         &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
@@ -333,12 +365,12 @@ same code pattern work in Python?&lt;/p&gt;
       &lt;span class="mi"&gt;5&lt;/span&gt;         &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;
       &lt;span class="mi"&gt;6&lt;/span&gt;     &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;function&lt;/span&gt;
 
-&lt;span class="ne"&gt;UnboundLocalError&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;local&lt;/span&gt; &lt;span class="n"&gt;variable&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;i&amp;#39;&lt;/span&gt; &lt;span class="n"&gt;referenced&lt;/span&gt; &lt;span class="n"&gt;before&lt;/span&gt; &lt;span class="n"&gt;assignment&lt;/span&gt;
+&lt;span class="ne"&gt;UnboundLocalError&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;local&lt;/span&gt; &lt;span class="n"&gt;variable&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;i&amp;#39;&lt;/span&gt; &lt;span class="n"&gt;referenced&lt;/span&gt; &lt;span class="n"&gt;before&lt;/span&gt; &lt;span class="n"&gt;assignment&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;Nope. We get an &lt;code&gt;UnboundLocalError&lt;/code&gt;. What if we just refer to &lt;code&gt;i&lt;/code&gt; rather than try to increment it's value?&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
     &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;120&lt;/span&gt;
     &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;function&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
         &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;
@@ -357,7 +389,7 @@ happened here? In Python, you can access a variable from a parent scope, but you
 done within the local scope, even if a variable with the same name is declared in a parent 
 scope. The parent variable is not overridden, but instead a new variable is created in the nested scope. 
 Take the following code for example:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
     &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;120&lt;/span&gt;
     &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;function&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
         &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;
@@ -374,27 +406,27 @@ Take the following code for example:&lt;/p&gt;
 &lt;p&gt;Although we can't overwrite a variable in a parent scope, we can modify its contents &lt;em&gt;if the object is a 
 mutable type&lt;/em&gt; like a list or an object. So to replicate the JS style closure in Python, one could close over a
 mutable object, e.g.&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_incrementer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
-    &lt;span class="nx"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="cp"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="cp"&gt;]&lt;/span&gt;
-    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
-        &lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="cp"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="cp"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
-        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="cp"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="cp"&gt;]&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;def get_incrementer():
+    i = [0]
+    def function():
+        i[0] += 1
+        return i[0]
+    return function
 
-&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;f&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;get_incrementer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;f&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-&lt;span class="mi"&gt;1&lt;/span&gt;
-&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;f&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-&lt;span class="mi"&gt;2&lt;/span&gt;
-&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;f&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-&lt;span class="mi"&gt;3&lt;/span&gt;
+&amp;gt;&amp;gt; f = get_incrementer()
+&amp;gt;&amp;gt; f()
+1
+&amp;gt;&amp;gt; f()
+2
+&amp;gt;&amp;gt; f()
+3
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;Let's say that instead of using the pattern given above, we defined &lt;code&gt;incrementer&lt;/code&gt; to be a method of a class and used it 
 to increment a normal class attribute.&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;MyClass&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;object&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;MyClass&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;object&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="fm"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
         &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
     &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;incrementer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
         &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_i&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
@@ -426,17 +458,17 @@ application code. This is called &lt;a href="https://en.wikipedia.org/wiki/Separ
 central to a programming paradigm known as &lt;a href="https://en.wikipedia.org/wiki/Aspect-oriented_programming"&gt;&lt;em&gt;aspect oriented programming&lt;/em&gt;&lt;/a&gt;. &lt;/p&gt;
 &lt;p&gt;Let's write a logging decorator that logs the name of the function call, the arguments passed to the function, and 
 the return value.&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;log_me&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;log_me&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
     &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;function_wrapper&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-        &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Calling function {:}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;func_name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-        &lt;span class="n"&gt;args_list&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;#39; &amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;join&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="nb"&gt;str&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
-        &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Positional arguments: {:}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;args_list&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-        &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Keyword arguments: {:}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Calling function {:}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;func_name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;args_list&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39; &amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;join&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="nb"&gt;str&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Positional arguments: {:}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;args_list&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Keyword arguments: {:}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 
-        &lt;span class="c"&gt;# Call the original function&lt;/span&gt;
+        &lt;span class="c1"&gt;# Call the original function&lt;/span&gt;
         &lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 
-        &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Return: {:}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Return: {:}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
     &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;function_wrapper&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
@@ -449,7 +481,7 @@ logs the result. &lt;/p&gt;
 use the &lt;a href="https://docs.python.org/2/library/logging.html"&gt;logging module&lt;/a&gt; or something similar.&lt;/p&gt;
 &lt;p&gt;To &lt;em&gt;use&lt;/em&gt; &lt;code&gt;log_me&lt;/code&gt; we can use the Python decorator syntax (which you're familiar with if you've used e.g. &lt;a href="http://flask.pocoo.org/"&gt;flask&lt;/a&gt; 
 or many other popular Python packages that use decorators):&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;@log_me
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;@log_me
 def adder(a, b, **kwargs):
     return a + b
 
@@ -460,38 +492,38 @@ def multiplier(a, b, **kwargs):
 
 
 &lt;p&gt;Here I've defined two simple functions and decorated them with &lt;code&gt;log_me&lt;/code&gt;. Equivalently I could have just done:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;def multiplier(a, b, **kwargs):
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;def multiplier(a, b, **kwargs):
     return a * b
 multiplier = log_me(multiplier)
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;Anyway, the result is that when I call either of these two functions, their inputs and outputs get logged.&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;adder&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;another&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;argument&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="nx"&gt;Calling&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;adder&lt;/span&gt;
-&lt;span class="nx"&gt;Positional&lt;/span&gt; &lt;span class="nx"&gt;arguments&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
-&lt;span class="nx"&gt;Keyword&lt;/span&gt; &lt;span class="nx"&gt;arguments&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;another&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;argument&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;
-&lt;span class="nx"&gt;Return&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt; adder(1,2, another=&amp;#39;argument&amp;#39;)
+Calling function adder
+Positional arguments: 1 2
+Keyword arguments: {&amp;#39;another&amp;#39;: &amp;#39;argument&amp;#39;}
+Return: 3
 
-&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;multiplier&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;another&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;argument&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="nx"&gt;Calling&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;multiplier&lt;/span&gt;
-&lt;span class="nx"&gt;Positional&lt;/span&gt; &lt;span class="nx"&gt;arguments&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
-&lt;span class="nx"&gt;Keyword&lt;/span&gt; &lt;span class="nx"&gt;arguments&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;another&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;argument&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;
-&lt;span class="nx"&gt;Return&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;12&lt;/span&gt;
+&amp;gt;&amp;gt; multiplier(3, 4, another=&amp;#39;argument&amp;#39;)
+Calling function multiplier
+Positional arguments: 1 2
+Keyword arguments: {&amp;#39;another&amp;#39;: &amp;#39;argument&amp;#39;}
+Return: 12
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;This is really cool. We have now separated the logging code entirely from the rest of our code, making everything
 easier to read and maintain. It's also super easy to start logging new functions. Just add the &lt;code&gt;log_me&lt;/code&gt; decorator! And
-all of this is made possible by closures.&lt;/p&gt;</summary><category term="python"></category></entry><entry><title>Processing whole files from S3 with Spark</title><link href="http://michaelryanbell.com/processing-whole-files-spark-s3.html" rel="alternate"></link><updated>2015-02-11T00:00:00-05:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2015-02-11:processing-whole-files-spark-s3.html</id><summary type="html">&lt;p&gt;I have recently started diving into &lt;a href="https://spark.apache.org/"&gt;Apache Spark&lt;/a&gt; for a project at work and ran into issues trying to process the contents of a collection of files in parallel, particularly when the files are stored on Amazon S3. In this post I describe my problem and how I got around it.&lt;/p&gt;
+all of this is made possible by closures.&lt;/p&gt;</content><category term="python"></category></entry><entry><title>Processing whole files from S3 with Spark</title><link href="http://michaelryanbell.com/processing-whole-files-spark-s3.html" rel="alternate"></link><published>2015-02-11T00:00:00-05:00</published><updated>2015-02-11T00:00:00-05:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2015-02-11:/processing-whole-files-spark-s3.html</id><summary type="html">&lt;p&gt;I have recently started diving into &lt;a href="https://spark.apache.org/"&gt;Apache Spark&lt;/a&gt; for a project at work and ran into issues trying to process the contents of a collection of files in parallel, particularly when the files are stored on Amazon S3. In this post I describe my problem and how I got around …&lt;/p&gt;</summary><content type="html">&lt;p&gt;I have recently started diving into &lt;a href="https://spark.apache.org/"&gt;Apache Spark&lt;/a&gt; for a project at work and ran into issues trying to process the contents of a collection of files in parallel, particularly when the files are stored on Amazon S3. In this post I describe my problem and how I got around it.&lt;/p&gt;
 &lt;p&gt;My first Spark project is simple. I have a single function that processes data from a file and a lot of data files to process using this function. It should be trivial to distribute this task, right? Just create an RDD (Spark's core data container, basically a distributed collection whose items can be operated on in parallel) where each item contains the contents of a single file and apply my function using the RDD methods &lt;code&gt;foreach&lt;/code&gt; or &lt;code&gt;map&lt;/code&gt; if I want to capture results for logging or something. &lt;/p&gt;
 &lt;p&gt;Most examples I found for &lt;code&gt;pyspark&lt;/code&gt; create RDDs using the &lt;code&gt;SparkContext.textFile()&lt;/code&gt; method. This generates an RDD where each line of the file is an item in the collection. This is not what I want. Looking through the API docs I found the method &lt;code&gt;SparkContext.wholeTextFiles()&lt;/code&gt; that appears to do exactly what I want. I can point this method to a directory and it will create an RDD where each item contains data from an entire file. Perfect! Well, it would be if it worked anyway.&lt;/p&gt;
 &lt;p&gt;Here's the issue... our data files are stored on Amazon S3, and for whatever reason this method fails when reading data from S3 (using Spark v1.2.0). I'm using &lt;a href="https://spark.apache.org/docs/1.2.1/api/python/pyspark.html"&gt;&lt;code&gt;pyspark&lt;/code&gt;&lt;/a&gt; but I've read in forums that people are having the same issue with the Scala library, so it's not just a Python issue. Anyway, here's how I got around this problem.&lt;/p&gt;
 &lt;p&gt;First, I create a listing of files in a root directory and store the listing in a text file in a scratch bucket on S3. Here is a code snippet (I'm using &lt;a href="https://boto.readthedocs.org/en/latest/"&gt;&lt;code&gt;boto&lt;/code&gt;&lt;/a&gt; to interact with S3):&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;conn&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;boto&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect_s3&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-&lt;span class="c"&gt;# bucket is the name of the S3 bucket where your data resides&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;conn&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;boto&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect_s3&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="c1"&gt;# bucket is the name of the S3 bucket where your data resides&lt;/span&gt;
 &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;conn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_bucket&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;bucket&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  
-&lt;span class="c"&gt;# inkey_root is the S3 &amp;#39;directory&amp;#39; in which your files are located&lt;/span&gt;
+&lt;span class="c1"&gt;# inkey_root is the S3 &amp;#39;directory&amp;#39; in which your files are located&lt;/span&gt;
 &lt;span class="n"&gt;keys&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;list&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;prefix&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;inkey_root&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 
 &lt;span class="n"&gt;key_list&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;keys&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
@@ -501,7 +533,7 @@ all of this is made possible by closures.&lt;/p&gt;</summary><category term="pyt
 
 
 &lt;p&gt;Next I need a function that takes a file path, parses the data from the file into a string, and returns a tuple with the file name and contents (as a string). Here is just such a function:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;fetch_data&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s3key&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;fetch_data&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s3key&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
     &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
 &lt;span class="sd"&gt;    Fetch data with the given s3 key and pass along the contents as a string.&lt;/span&gt;
 
@@ -517,48 +549,50 @@ all of this is made possible by closures.&lt;/p&gt;</summary><category term="pyt
     &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_contents_as_string&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
     &lt;span class="n"&gt;conn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;close&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
 
-    &lt;span class="c"&gt;# I use basename() to get just the file name itself&lt;/span&gt;
+    &lt;span class="c1"&gt;# I use basename() to get just the file name itself&lt;/span&gt;
     &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;basename&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s3key&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;Then I create an RDD using &lt;code&gt;parallelize&lt;/code&gt; on the listing of files to process. The RDD items will be the paths (ok fine, &lt;em&gt;keys&lt;/em&gt;) of the files that I want to process in S3.  Then I call the RDD's &lt;code&gt;map&lt;/code&gt; method, using &lt;code&gt;fetch_data&lt;/code&gt; to parse the files and pass their contents along as a new RDD with the file contents as items, just like I wanted from &lt;code&gt;wholeTextFiles&lt;/code&gt; in the first place. Then you can go ahead and process the resulting data as necessary, e.g. by chaining a call to another &lt;code&gt;map&lt;/code&gt;, &lt;code&gt;foreach&lt;/code&gt; or whatever. Here's the code, with a chained call to &lt;code&gt;foreach&lt;/code&gt; to process the data using a function &lt;code&gt;process_data&lt;/code&gt;.&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sc&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pyspark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SparkContext&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;local&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Whatever&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="c"&gt;# Create an RDD from the list of s3 key names to process stored in key_list&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;sc&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pyspark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SparkContext&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;local&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Whatever&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="c1"&gt;# Create an RDD from the list of s3 key names to process stored in key_list&lt;/span&gt;
 &lt;span class="n"&gt;file_list&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sc&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parallelize&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key_list&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;span class="n"&gt;file_list&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;map&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fetch_data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;foreach&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;process_data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;So there you have it, a simple way to get around the fact that Spark's &lt;code&gt;wholeTextFiles&lt;/code&gt; (as of now) does not work with files stored in S3.&lt;/p&gt;</summary><category term="spark"></category><category term="how-to"></category></entry><entry><title>Spell checking an IPython notebook</title><link href="http://michaelryanbell.com/ipynb-spellchecking.html" rel="alternate"></link><updated>2015-02-01T00:00:00-05:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2015-02-01:ipynb-spellchecking.html</id><summary type="html">&lt;p&gt;I've been using &lt;a href="http://ipython.org/notebook.html"&gt;IPython notebooks&lt;/a&gt; a lot lately for both my personal and professional 
-research and analysis projects. It's a great tool for keeping code, visualization and analysis together in one place. 
-It's also convenient for communicating results. Just export your notebook to HTML and it's ready to distribute... except 
-for the fact that without a spell checker I tend to have a lot of typos in my markdown cells. &lt;/p&gt;
-&lt;p&gt;I found a work-around that enables spell checking in the markdown cells of my notebooks from GitHub user 
-&lt;a href="https://github.com/dsblank"&gt;dsblank&lt;/a&gt; in the comments of the IPython project issue 
-&lt;a href="https://github.com/ipython/ipython/issues/3216"&gt;here&lt;/a&gt;. It is a bit hack-y and tedious but it works. &lt;/p&gt;
+&lt;p&gt;So there you have it, a simple way to get around the fact that Spark's &lt;code&gt;wholeTextFiles&lt;/code&gt; (as of now) does not work with files stored in S3.&lt;/p&gt;</content><category term="spark"></category><category term="how-to"></category></entry><entry><title>Spell checking an IPython notebook</title><link href="http://michaelryanbell.com/ipynb-spellchecking.html" rel="alternate"></link><published>2015-02-01T00:00:00-05:00</published><updated>2015-02-01T00:00:00-05:00</updated><author><name>Michael Bell</name></author><id>tag:michaelryanbell.com,2015-02-01:/ipynb-spellchecking.html</id><summary type="html">&lt;p&gt;I've been using &lt;a href="http://ipython.org/notebook.html"&gt;IPython notebooks&lt;/a&gt; a lot lately for both my personal and professional
+research and analysis projects. It's a great tool for keeping code, visualization and analysis together in one place.
+It's also convenient for communicating results. Just export your notebook to HTML and it's ready to distribute... except …&lt;/p&gt;</summary><content type="html">&lt;p&gt;I've been using &lt;a href="http://ipython.org/notebook.html"&gt;IPython notebooks&lt;/a&gt; a lot lately for both my personal and professional
+research and analysis projects. It's a great tool for keeping code, visualization and analysis together in one place.
+It's also convenient for communicating results. Just export your notebook to HTML and it's ready to distribute... except
+for the fact that without a spell checker I tend to have a lot of typos in my markdown cells.&lt;/p&gt;
+&lt;p&gt;I found a work-around that enables spell checking in the markdown cells of my notebooks from GitHub user
+&lt;a href="https://github.com/dsblank"&gt;dsblank&lt;/a&gt; in the comments of the IPython project issue
+&lt;a href="https://github.com/ipython/ipython/issues/3216"&gt;here&lt;/a&gt;. It is a bit hack-y and tedious but it works.&lt;/p&gt;
 &lt;p&gt;To enable spell checking, do the following:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;Install a custom extension with the following command&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;ipython install-nbextension https://bitbucket.org/ipre/calico/downloads/calico-spell-check-1.0.zip
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ipython install-nbextension https://bitbucket.org/ipre/calico/downloads/calico-spell-check-1.0.zip
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;Execute the following code in a cell of your notebook&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="c"&gt;%%javascript&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c"&gt;%%javascript&lt;/span&gt;
 &lt;span class="n"&gt;IPython&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load_extensions&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;calico-spell-check&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;You should now see a new button in the tool bar that, when checked, enables spell checking within your markdown cells. &lt;/p&gt;
-&lt;p&gt;This functionality will only last for the current session of the current notebook. You'll have to repeat step 2 for each 
-notebook and for every session. &lt;strong&gt;And be sure to delete or comment the code from step 2 once you've executed it.&lt;/strong&gt; I've 
-found that it causes problems (unexecutable markdown cells) if you happen to execute that block of code twice in one 
+&lt;p&gt;You should now see a new button in the tool bar that, when checked, enables spell checking within your markdown cells.&lt;/p&gt;
+&lt;p&gt;This functionality will only last for the current session of the current notebook. You'll have to repeat step 2 for each
+notebook and for every session. &lt;strong&gt;And be sure to delete or comment the code from step 2 once you've executed it.&lt;/strong&gt; I've
+found that it causes problems (unexecutable markdown cells) if you happen to execute that block of code twice in one
 session.&lt;/p&gt;
-&lt;p&gt;Apart from the tedium of this solution, I've found that it works rather well. Hopefully this functionality will make it 
-into future release of the IPython notebook.&lt;/p&gt;</summary><category term="ipython"></category><category term="how-to"></category></entry></feed>
+&lt;p&gt;Apart from the tedium of this solution, I've found that it works rather well. Hopefully this functionality will make it
+into future release of the IPython notebook.&lt;/p&gt;</content><category term="python"></category><category term="how-to"></category></entry></feed>

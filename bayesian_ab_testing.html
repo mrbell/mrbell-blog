@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"
->
+<html lang="en" prefix="og: http://ogp.me/ns# fb: https://www.facebook.com/2008/fbml">
 <head>
     <title>Bayesian A/B testing with confidence - Michael Bell</title>
     <!-- Using the latest rendering mode for IE -->
@@ -38,6 +37,11 @@
         <link href="http://michaelryanbell.com/feeds/all.atom.xml" type="application/atom+xml" rel="alternate"
               title="Michael Bell ATOM Feed"/>
 
+
+
+        <link href="http://michaelryanbell.com/feeds/blog.atom.xml" type="application/atom+xml" rel="alternate"
+              title="Michael Bell Blog ATOM Feed"/>
+
 </head>
 <body>
 
@@ -55,12 +59,14 @@ Michael Bell            </a>
         </div>
         <div class="collapse navbar-collapse navbar-ex1-collapse">
             <ul class="nav navbar-nav">
+                         <li><a href="http://michaelryanbell.com/pages/about.html">
+                             About
+                          </a></li>
                         <li class="active">
                             <a href="http://michaelryanbell.com/category/blog.html">Blog</a>
                         </li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-              <li><a href="http://michaelryanbell.com/archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
             </ul>
         </div>
         <!-- /.navbar-collapse -->
@@ -71,7 +77,6 @@ Michael Bell            </a>
 <div class="container">
     <div class="row">
         <div class="col-sm-9">
-
     <section id="content">
         <article>
             <header class="page-header">
@@ -91,6 +96,8 @@ Michael Bell            </a>
     <span class="published">
         <i class="fa fa-calendar"></i><time datetime="2015-12-27T00:00:00-05:00"> Sun 27 December 2015</time>
     </span>
+
+
 
 
 
@@ -168,7 +175,7 @@ between 0.4 and 0.6 with a mean of 0.5. The posterior mean approaches
 the ratio <span class="math">\(k/n\)</span> in each case, but there is still some influence of the prior
 given the limited amount of data. With more and more data, the posterior
 distribution will become centered on the ratio <span class="math">\(k/n\)</span> and increasingly more narrow.</p>
-<p><img alt="Example Posterior Inference" src="http://michaelryanbell.com/images/example_posterior_inference.png" /></p>
+<p><img alt="Example Posterior Inference" src="http://michaelryanbell.com/images/example_posterior_inference.png"></p>
 <h2>The probability that the new procedure is better</h2>
 <p>Given the experimental data and the posterior distributions for p, how does one know
 that the new procedure is better than the old one i.e. that <span class="math">\(p_{B}&gt;p_{A}\)</span>? If you
@@ -198,7 +205,7 @@ Actually, in case the two procedures are indeed the same then the POI turns out 
 In this case the true values of <span class="math">\(p_A\)</span> and <span class="math">\(p_B\)</span> are both 0.5.
 I show the average value from all 100 simulations at each value of <span class="math">\(n\)</span> together with the
 intervals covering 65% and 95% of all observed values.</p>
-<p><img alt="POI with equal probabilities for each group" src="http://michaelryanbell.com/images/poi_equal_probabilities.png" /></p>
+<p><img alt="POI with equal probabilities for each group" src="http://michaelryanbell.com/images/poi_equal_probabilities.png"></p>
 <p>The simulations show that nearly any POI can be observed
 when the two procedures truly have the same effect. Judging solely on POI,
 there is a decent chance that one could observe <span class="math">\(p_B\)</span> to be greater than <span class="math">\(p_A\)</span>
@@ -228,7 +235,7 @@ it also provides an estimate of how much better it is.</p>
 <p>What happens to the expected gain when the true values of <span class="math">\(p_B\)</span> and <span class="math">\(p_A\)</span> are equal?
 The POI wasn't always reliable in this situation. Is the gain a better metric?
 I'll turn again to simulated experimental results to find out.</p>
-<p><img alt="Expected gain with equal probabilities for each group" src="http://michaelryanbell.com/images/gain_equal_probabilities.png" /></p>
+<p><img alt="Expected gain with equal probabilities for each group" src="http://michaelryanbell.com/images/gain_equal_probabilities.png"></p>
 <p>It's clear that the gain behaves much better than the POI did above. The gain
 quickly falls to a small value relatively quickly, and drops closer to the
 true value of 0 as the experiment continues. When looking for, say, a
@@ -245,7 +252,7 @@ peeking at a <em>p</em>-value).</p>
 and are interested in implementing a new procedure (applied to group B) if we find a 1% gain
 in <span class="math">\(p_B\)</span> over <span class="math">\(p_A\)</span>. But let's imagine that <span class="math">\(p_B\)</span> is actually 1% <em>lower</em> than
 <span class="math">\(p_A\)</span>.</p>
-<p><img alt="Gain as a function of experiment length when B is worse than A." src="http://michaelryanbell.com/images/gain_B_is_worse.png" /></p>
+<p><img alt="Gain as a function of experiment length when B is worse than A." src="http://michaelryanbell.com/images/gain_B_is_worse.png"></p>
 <p>The figure above shows the expected gain from 100 simulated experiments where again
 I "peek" at the gain every 1000 trials. Until about 5000 trials
 there is a good chance that a 1% gain in B over A can be observed, and if I saw that
@@ -270,7 +277,7 @@ calculated directly</p>
 evaluating the experimental outcome. As an experiment is run
 the expected gain and it's variance can be calculated. If the gain is found to be significant
 <em>relative to</em> the square root of the variance, then the experiment can safely be stopped.</p>
-<p><img alt="Average gain together with uncertainty compared to variance observed in experiments with 5% gain." src="http://michaelryanbell.com/images/gain_w_uncert.png" /></p>
+<p><img alt="Average gain together with uncertainty compared to variance observed in experiments with 5% gain." src="http://michaelryanbell.com/images/gain_w_uncert.png"></p>
 <p>In the figure above, I show the results of another set of 100 simulations. In this
 case the true value of <span class="math">\(p_B\)</span> is 5% higher than <span class="math">\(p_A\)</span>. The average
 of all observed gains converges on the correct difference pretty quickly. I also
@@ -281,7 +288,7 @@ using the equation above. The closed form "1-<span class="math">\(\sigma\)</span
 calculation matches the spread of simulated results very closely. The figure
 below is similar, but for a true <span class="math">\(p_B\)</span> that is only 1% higher than <span class="math">\(p_A\)</span> for
 comparison.</p>
-<p><img alt="Average gain together with uncertainty compared to variance observed in experiments with 1% gain." src="http://michaelryanbell.com/images/gain_w_uncert_1percent.png" /></p>
+<p><img alt="Average gain together with uncertainty compared to variance observed in experiments with 1% gain." src="http://michaelryanbell.com/images/gain_w_uncert_1percent.png"></p>
 <h2>What's the difference?</h2>
 <p><strong>Thanks to Niels Oppermann for motivating this section.</strong></p>
 <p>The expected gain and its variance have both been calculated under the condition that
@@ -305,12 +312,12 @@ a single simulated experiment including the "<span class="math">\(1\sigma\)</spa
 square root of the variance in each measure). In this case the true difference
 between <span class="math">\(p_B\)</span> and <span class="math">\(p_A\)</span> is 1%. After about 5000 trials, the two measures are
 essentially the same.</p>
-<p><img alt="Comparison of expected gain and difference for a simulated example." src="http://michaelryanbell.com/images/gain_and_diff_1percent.png" /></p>
+<p><img alt="Comparison of expected gain and difference for a simulated example." src="http://michaelryanbell.com/images/gain_and_diff_1percent.png"></p>
 <p>When the gain or difference is larger, the two quantities converge even more quickly.
 But what about when the difference is negative? In this case, there is much more discrepancy
 between the gain and the difference because the gain is a strictly positive quantity
 while the difference can take both positive and negative values.</p>
-<p><img alt="Comparison of expected gain and difference for a simulated example with negative difference." src="http://michaelryanbell.com/images/gain_and_diff_neg1percent.png" /></p>
+<p><img alt="Comparison of expected gain and difference for a simulated example with negative difference." src="http://michaelryanbell.com/images/gain_and_diff_neg1percent.png"></p>
 <p>While I started by providing the gain and it's variance to build on the work of the blog posts
 of Miller and Stuccio, I will actually opt to use the expected difference and it's
 variance in my experiments.</p>
@@ -341,11 +348,9 @@ be calculated in these cases as well.</p>
     }
 
     var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
     mathjaxscript[(window.opera ? "innerHTML" : "text")] =
         "MathJax.Hub.Config({" +
         "    config: ['MMLorHTML.js']," +
@@ -436,10 +441,8 @@ be calculated in these cases as well.</p>
 
 
 
-            <li class="list-group-item"><a href="http://michaelryanbell.com/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
-                <ul class="list-group " id="tags">
-                </ul>
-            </li>
+
+
     </ul>
 </section>
             </aside>
@@ -450,8 +453,8 @@ be calculated in these cases as well.</p>
    <div class="container">
       <hr>
       <div class="row">
-         <div class="col-xs-10">&copy; 2015 Michael Bell
-            &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+         <div class="col-xs-10">&copy; 2017 Michael Bell
+            &middot; Powered by <a href="https://github.com/getpelican/pelican-themes/tree/master/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
             <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
             <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
          <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>
