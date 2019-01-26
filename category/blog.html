@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns# fb: https://www.facebook.com/2008/fbml">
+<head>
+    <title>Blog - Michael Bell</title>
+    <!-- Using the latest rendering mode for IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+
+    <meta name="author" content="Michael Bell" />
+    <meta name="keywords" content="Blog" />
+
+    <!-- Open Graph tags -->
+        <meta property="og:site_name" content="Michael Bell" />
+        <meta property="og:type" content="website"/>
+        <meta property="og:title" content="Michael Bell"/>
+        <meta property="og:url" content="http://michaelryanbell.com"/>
+        <meta property="og:description" content="Michael Bell"/>
+
+
+
+    <!-- Bootstrap -->
+        <link rel="stylesheet" href="http://michaelryanbell.com/theme/css/bootstrap.simplex.min.css" type="text/css"/>
+    <link href="http://michaelryanbell.com/theme/css/font-awesome.min.css" rel="stylesheet">
+
+    <link href="http://michaelryanbell.com/theme/css/pygments/native.css" rel="stylesheet">
+    <link rel="stylesheet" href="http://michaelryanbell.com/theme/css/style.css" type="text/css"/>
+
+        <link href="http://michaelryanbell.com/feeds/all.atom.xml" type="application/atom+xml" rel="alternate"
+              title="Michael Bell ATOM Feed"/>
+
+        <link href="http://michaelryanbell.com/feeds/blog.atom.xml" type="application/atom+xml" rel="alternate"
+              title="Michael Bell Blog ATOM Feed"/>
+</head>
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="http://michaelryanbell.com/" class="navbar-brand">
+Michael Bell            </a>
+        </div>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav">
+                         <li><a href="http://michaelryanbell.com/pages/about.html">
+                             About
+                          </a></li>
+                        <li class="active">
+                            <a href="http://michaelryanbell.com/category/blog.html">Blog</a>
+                        </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+</div> <!-- /.navbar -->
+
+<!-- Banner -->
+<!-- End Banner -->
+
+<!-- Content Container -->
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9">
+            <article>
+                <h2><a href="http://michaelryanbell.com/absolver-hot-takes.html">I want to love Absolver, but...</a></h2>
+                <div class="summary">
+
+<p>I like Absolver. I want to love it, but I can't. Not right now. It's core gameplay can be satisfying and thrilling, requiring deliberate, precise control to succeed. There is an impressive depth of strategy while still being approachable. But sometimes clunky controls, often buggy online play, and some obtuse mechanics and design choices have lead me to quit the game in frustration far too often at this point. The core combat mechanics are strong enough to keep me coming back for now, but I'm not sure how long that will last without some updates, particularly to the online experience.</p>
+
+                    <a class="btn btn-default btn-xs" href="http://michaelryanbell.com/absolver-hot-takes.html">more ...</a>
+                </div>
+            </article>
+            <hr/>
+            <article>
+                <h2><a href="http://michaelryanbell.com/fear-of-blogging.html">I'm afraid to write on the internet</a></h2>
+                <div class="summary">
+
+<p>I don't post on this site much and that bothers me. I want to write more, often have ideas for things to write about, and may even jot down some notes and thoughts, but rarely get around to posting things. Why? To be honest, I don't post here mostly because I'm kind of afraid to.</p>
+
+                    <a class="btn btn-default btn-xs" href="http://michaelryanbell.com/fear-of-blogging.html">more ...</a>
+                </div>
+            </article>
+            <hr/>
+            <article>
+                <h2><a href="http://michaelryanbell.com/bayesian_ab_testing.html">Bayesian A/B testing with confidence</a></h2>
+                <div class="summary">
+
+<p>I have been developing the A/B testing procedure that I want to use in
+an upcoming experiment at work. Generally speaking I'm on team Bayes when it comes
+to statistical matters, and that's the approach that I will take in this case as well. In
+this (long) post I'll outline a method for Bayesian A/B testing that is largely built on some
+excellent blog posts by <a href="http://www.evanmiller.org/bayesian-ab-testing.html">Evan Miller</a>,
+<a href="https://www.chrisstucchio.com/blog/2014/bayesian_ab_decision_rule.html">Chris Stuccio</a>,
+and <a href="http://varianceexplained.org/r/bayesian-ab-testing/">David Robinson</a>.
+In this post I'll summarize the results of Miller and Stuccio, ending up with a
+decision function for A/B testing based on the gain expected from making the
+change that is under consideration. I go a bit further than the referenced posts
+by deriving a measure of uncertainty in the expected gain that can be used to
+determine when a result is significant and overcome the "peeking" problem discussed
+in Robinson's post. Lastly I calculate the expected difference between the two
+procedures under test (as opposed to the gain which is the difference but
+only when the new procedure is better).
+Throughout I present some simulated examples to give a sense of the impact of the
+different parameters in the model and to illustrate some aspects of the model
+that one should be aware of.</p>
+
+                    <a class="btn btn-default btn-xs" href="http://michaelryanbell.com/bayesian_ab_testing.html">more ...</a>
+                </div>
+            </article>
+            <hr/>
+            <article>
+                <h2><a href="http://michaelryanbell.com/python_closures.html">Closures in Python</a></h2>
+                <div class="summary"><p>The concept of <a href="https://en.wikipedia.org/wiki/Closure_(computer_programming)"><em>closures</em></a> is something that I've been 
+familiar with for a while, but I haven't used in my own work until recently. I started thinking more about closures while reading 
+<a href="http://www.amazon.com/Software-Engineer-Learns-JavaScript-jQuery-ebook/dp/B00GAMTRI8">A Software Engineer Learns HTML5, JavaScript and jQuery</a> 
+by Dane Cameron (an excellent book, btw). They are introduced …</p>
+                    <a class="btn btn-default btn-xs" href="http://michaelryanbell.com/python_closures.html">more ...</a>
+                </div>
+            </article>
+            <hr/>
+            <article>
+                <h2><a href="http://michaelryanbell.com/processing-whole-files-spark-s3.html">Processing whole files from S3 with Spark</a></h2>
+                <div class="summary"><p>I have recently started diving into <a href="https://spark.apache.org/">Apache Spark</a> for a project at work and ran into issues trying to process the contents of a collection of files in parallel, particularly when the files are stored on Amazon S3. In this post I describe my problem and how I got around …</p>
+                    <a class="btn btn-default btn-xs" href="http://michaelryanbell.com/processing-whole-files-spark-s3.html">more ...</a>
+                </div>
+            </article>
+            <hr/>
+            <article>
+                <h2><a href="http://michaelryanbell.com/ipynb-spellchecking.html">Spell checking an IPython notebook</a></h2>
+                <div class="summary"><p>I've been using <a href="http://ipython.org/notebook.html">IPython notebooks</a> a lot lately for both my personal and professional
+research and analysis projects. It's a great tool for keeping code, visualization and analysis together in one place.
+It's also convenient for communicating results. Just export your notebook to HTML and it's ready to distribute... except …</p>
+                    <a class="btn btn-default btn-xs" href="http://michaelryanbell.com/ipynb-spellchecking.html">more ...</a>
+                </div>
+            </article>
+            <hr/>
+
+        </div>
+        <div class="col-sm-3" id="sidebar">
+            <aside>
+<!-- Sidebar -->
+<section class="well well-sm">
+  <ul class="list-group list-group-flush">
+
+<!-- Sidebar/Social -->
+<li class="list-group-item">
+  <h4><i class="fa fa-home fa-lg"></i><span class="icon-label">Social</span></h4>
+  <ul class="list-group" id="social">
+    <li class="list-group-item"><a href="https://twitter.com/mryanbell"><i class="fa fa-twitter-square fa-lg"></i> Twitter</a></li>
+    <li class="list-group-item"><a href="https://github.com/mrbell"><i class="fa fa-github-square fa-lg"></i> GitHub</a></li>
+  </ul>
+</li>
+<!-- End Sidebar/Social -->
+  </ul>
+</section>
+<!-- End Sidebar -->            </aside>
+        </div>
+    </div>
+</div>
+<!-- End Content Container -->
+
+<footer>
+   <div class="container">
+      <hr>
+      <div class="row">
+         <div class="col-xs-10">&copy; 2017 Michael Bell
+            &middot; Powered by <a href="https://github.com/getpelican/pelican-themes/tree/master/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+            <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
+            <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
+         <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>
+      </div>
+   </div>
+</footer>
+<script src="http://michaelryanbell.com/theme/js/jquery.min.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="http://michaelryanbell.com/theme/js/bootstrap.min.js"></script>
+
+<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+<script src="http://michaelryanbell.com/theme/js/respond.min.js"></script>
+
+
+    <!-- Disqus -->
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'michaelryanbellcom'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function () {
+            var s = document.createElement('script');
+            s.async = true;
+            s.type = 'text/javascript';
+            s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+        }());
+    </script>
+    <!-- End Disqus Code -->
+    <!-- Google Analytics -->
+    <script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-59163082-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function () {
+            var ga = document.createElement('script');
+            ga.type = 'text/javascript';
+            ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+    <!-- End Google Analytics Code -->
+
+
+</body>
+</html>
