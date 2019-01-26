@@ -86,7 +86,7 @@ the ratio $k/n$ in each case, but there is still some influence of the prior
 given the limited amount of data. With more and more data, the posterior
 distribution will become centered on the ratio $k/n$ and increasingly more narrow.
 
-![Example Posterior Inference]({filename}/images/example_posterior_inference.png)
+![Example Posterior Inference]({static}/images/example_posterior_inference.png)
 
 ##The probability that the new procedure is better
 
@@ -124,7 +124,7 @@ In this case the true values of $p_A$ and $p_B$ are both 0.5.
 I show the average value from all 100 simulations at each value of $n$ together with the
 intervals covering 65% and 95% of all observed values.
 
-![POI with equal probabilities for each group]({filename}/images/poi_equal_probabilities.png)
+![POI with equal probabilities for each group]({static}/images/poi_equal_probabilities.png)
 
 The simulations show that nearly any POI can be observed
 when the two procedures truly have the same effect. Judging solely on POI,
@@ -164,7 +164,7 @@ What happens to the expected gain when the true values of $p_B$ and $p_A$ are eq
 The POI wasn't always reliable in this situation. Is the gain a better metric?
 I'll turn again to simulated experimental results to find out.
 
-![Expected gain with equal probabilities for each group]({filename}/images/gain_equal_probabilities.png)
+![Expected gain with equal probabilities for each group]({static}/images/gain_equal_probabilities.png)
 
 It's clear that the gain behaves much better than the POI did above. The gain
 quickly falls to a small value relatively quickly, and drops closer to the
@@ -186,7 +186,7 @@ and are interested in implementing a new procedure (applied to group B) if we fi
 in $p_B$ over $p_A$. But let's imagine that $p_B$ is actually 1% *lower* than
 $p_A$.
 
-![Gain as a function of experiment length when B is worse than A.]({filename}/images/gain_B_is_worse.png)
+![Gain as a function of experiment length when B is worse than A.]({static}/images/gain_B_is_worse.png)
 
 The figure above shows the expected gain from 100 simulated experiments where again
 I "peek" at the gain every 1000 trials. Until about 5000 trials
@@ -218,7 +218,7 @@ evaluating the experimental outcome. As an experiment is run
 the expected gain and it's variance can be calculated. If the gain is found to be significant
 *relative to* the square root of the variance, then the experiment can safely be stopped.
 
-![Average gain together with uncertainty compared to variance observed in experiments with 5% gain.]({filename}/images/gain_w_uncert.png)
+![Average gain together with uncertainty compared to variance observed in experiments with 5% gain.]({static}/images/gain_w_uncert.png)
 
 In the figure above, I show the results of another set of 100 simulations. In this
 case the true value of $p_B$ is 5% higher than $p_A$. The average
@@ -231,7 +231,7 @@ calculation matches the spread of simulated results very closely. The figure
 below is similar, but for a true $p_B$ that is only 1% higher than $p_A$ for
 comparison.
 
-![Average gain together with uncertainty compared to variance observed in experiments with 1% gain.]({filename}/images/gain_w_uncert_1percent.png)
+![Average gain together with uncertainty compared to variance observed in experiments with 1% gain.]({static}/images/gain_w_uncert_1percent.png)
 
 ##What's the difference?
 
@@ -264,14 +264,14 @@ square root of the variance in each measure). In this case the true difference
 between $p_B$ and $p_A$ is 1%. After about 5000 trials, the two measures are
 essentially the same.
 
-![Comparison of expected gain and difference for a simulated example.]({filename}/images/gain_and_diff_1percent.png)
+![Comparison of expected gain and difference for a simulated example.]({static}/images/gain_and_diff_1percent.png)
 
 When the gain or difference is larger, the two quantities converge even more quickly.
 But what about when the difference is negative? In this case, there is much more discrepancy
 between the gain and the difference because the gain is a strictly positive quantity
 while the difference can take both positive and negative values.
 
-![Comparison of expected gain and difference for a simulated example with negative difference.]({filename}/images/gain_and_diff_neg1percent.png)
+![Comparison of expected gain and difference for a simulated example with negative difference.]({static}/images/gain_and_diff_neg1percent.png)
 
 While I started by providing the gain and it's variance to build on the work of the blog posts
 of Miller and Stuccio, I will actually opt to use the expected difference and it's

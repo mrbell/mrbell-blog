@@ -49,7 +49,10 @@ DEFAULT_PAGINATION = 10
 STATIC_PATHS = ['CNAME', 'images', 'pages']
 
 PLUGIN_PATHS = [os.path.join(home, "Code/pelican-plugins")]
-PLUGINS = ['render_math', 'summary']
+PLUGINS = ['render_math', 'summary', 'i18n_subsites', ]
+JINJA_ENVIRONMENT = {
+    'extensions': ['jinja2.ext.i18n'],
+}
 
 # Uncomment following line if you want document-relative URLs when developing
 #RELATIVE_URLS = True

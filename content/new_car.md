@@ -9,7 +9,7 @@ decided to get a daily driver. I figure, why not get a fun one? I've always love
 wanted an M3 forever. This seemed as good a time as any. So I got one. An E36 M3 to be exact.
 Here she is.
 
-![The new whip!]({filename}/images/M3.jpg)
+![The new whip!]({static}/images/M3.jpg)
 
 I stalked craigslist for a few months, on and off. I was mostly looking for E36 or E46 M3s, but
 considered 328s and 330s of the same eras for a while as well. My neighbor, who owns a '99 M3,
